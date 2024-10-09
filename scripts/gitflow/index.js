@@ -1,15 +1,37 @@
 
 const { askQuestion } = require('./prompts');
-const { executeCommand, checkRepoStatus, updateBranch } = require('./gitCommands');
+const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 
-async function createBranch() {
-  const branchType = await askQuestion('Выберите тип филиала:', config.branchTypes);
-  const branchName = await askQuestion('Название филиала: ');
-  const fullBranchName = `${branchType}/${branchName}`;
+async function manageBranch() {
+  const actionType = ['create', 'delete', 'switch']
 
-  executeCommand(`git checkout -b ${fullBranchName}`);
-  console.log(`Создано и переключено на ветку: ${fullBranchName}`);
+  const action = await askQuestion('Выберите действие:', actionType);
+  const branchType = await askQuestion('Выберите тип ветки:', config.branchTypes);
+  const branchName = await askQuestion('Название ветки: ');
+
+  // Запрашиваем номер задачи, это опционально
+  const taskNumber = await askQuestion('Введите номер задачи (если есть, оставьте пустым): ');
+
+  // Формируем полное имя ветки, добавляя номер задачи, если он введён
+  const fullBranchName = taskNumber ? `${branchType}/${taskNumber}-${branchName}` : `${branchType}/${branchName}`;
+
+  switch (action) {
+    case actionType[0]:
+      executeCommand(`git checkout -b ${fullBranchName}`);
+      console.log(`Создано и переключено на ветку: ${fullBranchName}`);
+      break;
+    case actionType[1]:
+      executeCommand(`git branch -d ${fullBranchName}`);
+      console.log(`Удалена ветка: ${fullBranchName}`);
+      break;
+    case actionType[3]:
+      executeCommand(`git checkout ${fullBranchName}`);
+      console.log(`Переключено на ветку: ${fullBranchName}`);
+      break;
+    default:
+      console.log('Неизвестное действие');
+  }
 }
 
 async function commitChanges() {
@@ -109,26 +131,26 @@ async function main() {
     const action = await askQuestion('Выберите действие:', config.choiceTypes);
 
     switch (action) {
-      case 'create-branch':
-        await createBranch();
+      case config.choiceTypes[0]:
+        await manageBranch();
         break;
-      case 'commit':
+      case config.choiceTypes[1]:
         await commitChanges();
         break;
-      case 'push':
+      case config.choiceTypes[2]:
         await pushChanges();
         break;
-      // case 'pr':
+      // case config.choiceTypes[3]:
       //   await createPullRequest();
       //   break;
-      case 'merge':
+      case config.choiceTypes[4]:
         await mergeBranch();
         break;
-      case 'undo':
+      case config.choiceTypes[5]:
         await undoLastAction();
         break;
-      case 'exit':
-        console.log('Exiting Git Flow Automation');
+      case config.choiceTypes[6]:
+        console.log('Выход Only Git Flow Automation');
         running = false;
         break;
       default:
