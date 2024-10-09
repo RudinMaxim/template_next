@@ -150,7 +150,7 @@ async function main() {
         await undoLastAction();
         break;
       case config.choiceTypes[6]:
-        console.log('Выход Only Git Flow Automation');
+        console.log('Выход из Only Git Flow Automation');
         running = false;
         break;
       default:
