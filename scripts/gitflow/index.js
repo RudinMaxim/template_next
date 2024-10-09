@@ -47,6 +47,13 @@ async function commitChanges() {
 
 async function pushChanges() {
   const currentBranch = executeCommand('git rev-parse --abbrev-ref HEAD').trim();
+  const status = executeCommand('git status --porcelain').trim();
+
+  if (status === '') {
+    console.log('Нет изменений для отправки на удаленный репозиторий.');
+    return;
+  }
+
   const shouldPush = await askQuestion(`Внести изменения в origin/${currentBranch}? (y/n): `);
 
   if (shouldPush.toLowerCase() === 'y') {
@@ -54,7 +61,6 @@ async function pushChanges() {
     console.log(`Изменения перенесены на origin/${currentBranch}`);
   }
 }
-
 // TODO: Implement functionality here
 // async function createPullRequest() {
 //   const ghInstalled = executeCommand('gh --version');
