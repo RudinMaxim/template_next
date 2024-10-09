@@ -32,51 +32,66 @@ async function pushChanges() {
   }
 }
 
-async function createPullRequest() {
-  const ghInstalled = executeCommand('gh --version');
-  if (!ghInstalled) {
-    console.error('GitHub CLI (gh) не установлен и не настроен.');
-    return;
-  }
+// TODO: Implement functionality here
+// async function createPullRequest() {
+//   const ghInstalled = executeCommand('gh --version');
+//   if (!ghInstalled) {
+//     console.error('GitHub CLI (gh) не установлен и не настроен.');
+//     return;
+//   }
 
-  const currentBranch = executeCommand('git rev-parse --abbrev-ref HEAD').trim();
-  const shouldCreatePR = await askQuestion(`Создать запрос на извлечение для ${currentBranch}? (y/n): `);
+//   const currentBranch = executeCommand('git rev-parse --abbrev-ref HEAD').trim();
+//   const shouldCreatePR = await askQuestion(`Создать запрос на извлечение для ${currentBranch}? (y/n): `);
 
-  if (shouldCreatePR.toLowerCase() === 'y') {
-    const prTitle = await askQuestion('Название запроса на извлечение: ');
-    const prDescription = await askQuestion('Описание запроса на извлечение: ');
+//   if (shouldCreatePR.toLowerCase() === 'y') {
+//     const prTitle = await askQuestion('Название запроса на извлечение: ');
+//     const prDescription = await askQuestion('Описание запроса на извлечение: ');
 
-    const result = executeCommand(
-      `gh pr create --title "${prTitle}" --body "${prDescription}" --base ${config.baseBranch}`
-    );
-    if (result) {
-      console.log('Запрос на извлечение создан');
-    } else {
-      console.log('Не удалось создать запрос на вытягивание. Проверьте наличие конфликтов.');
-      const shouldMergeBase = await askQuestion(`Слияние ${config.baseBranch} в ${currentBranch}? (y/n): `);
-      if (shouldMergeBase.toLowerCase() === 'y') {
-        executeCommand(`git merge ${config.baseBranch}`);
-        console.log(`Слитый ${config.baseBranch} в ${currentBranch}`);
-      }
-    }
-  }
-}
+//     const result = executeCommand(
+//       `gh pr create --title "${prTitle}" --body "${prDescription}" --base ${config.baseBranch}`
+//     );
+//     if (result) {
+//       console.log('Запрос на извлечение создан');
+//     } else {
+//       console.log('Не удалось создать запрос на вытягивание. Проверьте наличие конфликтов.');
+//       const shouldMergeBase = await askQuestion(`Слияние ${config.baseBranch} в ${currentBranch}? (y/n): `);
+//       if (shouldMergeBase.toLowerCase() === 'y') {
+//         executeCommand(`git merge ${config.baseBranch}`);
+//         console.log(`Слитый ${config.baseBranch} в ${currentBranch}`);
+//       }
+//     }
+//   }
+// }
 
 async function mergeBranch() {
   const currentBranch = executeCommand('git rev-parse --abbrev-ref HEAD').trim();
-  const targetBranch = await askQuestion('Целевая ветвь для слияния: ');
+  const targetBranch = await askQuestion('Целевая ветвь для слияния:', config.margeBranch);
 
-  executeCommand(`git checkout ${targetBranch}`);
-  const mergeResult = executeCommand(`git merge ${currentBranch}`);
+  if (targetBranch && !config.margeBranch.includes(targetBranch)) {
+    console.log(`Ошибка: ${targetBranch} не является допустимой целевой ветвью для слияния.`);
+    return;
+  }
+
+  const sourceBranch = targetBranch ? currentBranch : await askQuestion('Исходная ветвь для слияния:');
+  const finalTargetBranch = targetBranch || currentBranch;
+
+  if (targetBranch) {
+    executeCommand(`git checkout ${targetBranch}`);
+  }
+
+  const mergeResult = executeCommand(`git merge ${sourceBranch}`);
 
   if (mergeResult) {
-    console.log(`Успешно объединено ${currentBranch} в ${targetBranch}`);
+    console.log(`Успешно объединено ${sourceBranch} в ${finalTargetBranch}`);
   } else {
-    console.log(`При слиянии обнаружен конфликт ${currentBranch} в ${targetBranch}`);
+    console.log(`При слиянии обнаружен конфликт ${sourceBranch} в ${finalTargetBranch}`);
     console.log('Пожалуйста, разрешите конфликты вручную и зафиксируйте изменения.');
   }
-}
 
+  if (targetBranch) {
+    executeCommand(`git checkout ${currentBranch}`);
+  }
+}
 async function undoLastAction() {
   console.log('Отмена последнего действия...');
   executeCommand('git reset HEAD~1');
@@ -103,9 +118,9 @@ async function main() {
       case 'push':
         await pushChanges();
         break;
-      case 'pr':
-        await createPullRequest();
-        break;
+      // case 'pr':
+      //   await createPullRequest();
+      //   break;
       case 'merge':
         await mergeBranch();
         break;
