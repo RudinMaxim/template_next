@@ -1,36 +1,139 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Руководство по проекту
 
-## Getting Started
+## 0. Запуск проекта
 
-First, run the development server:
+Для запуска проекта выполните следующие команды:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Проект будет доступен по адресу [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 1. Архитектура
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Проект следует принципам Feature-Sliced Design (FSD). Основные слои:
 
-## Learn More
+- `features`: бизнес-функции приложения
+- `entities`: бизнес-сущности
+- `shared`: переиспользуемые компоненты и утилиты
 
-To learn more about Next.js, take a look at the following resources:
+### Добавление новых элементов
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Новая страница: добавьте в `src/app/(pages)`
+- Новый компонент: используйте соответствующий слой (feature, entity, shared)
+- Новая утилита: добавьте в `src/shared/lib`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Команды для создания компонентов
 
-## Deploy on Vercel
+```bash
+# Создание feature
+npm run create:feature
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Удаление feature
+npm run remove:feature
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Создание entity
+npm run create:entity
+
+# Удаление entity
+npm run remove:entity
+```
+
+## 2. Стили и BEM
+
+Используем SCSS и методологию BEM для стилизации.
+
+### Правила BEM
+
+- Блок: `.block`
+- Элемент: `.block__element`
+- Модификатор: `.block--modifier` или `.block__element--modifier`
+
+### Пример SCSS
+
+```scss
+.button {
+  &__icon {
+    // Стили для иконки
+  }
+
+  &--primary {
+    // Стили для основной кнопки
+  }
+}
+```
+
+### Медиа-запросы
+
+Используйте миксины для медиа-запросов:
+
+```scss
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+.element {
+  width: 50%;
+
+  @include mobile {
+    width: 100%;
+  }
+}
+```
+
+## 3. Именование
+
+- Компоненты: PascalCase (например, `UserProfile.tsx`)
+- Файлы утилит: camelCase (например, `formatDate.ts`)
+- Константы: UPPER_SNAKE_CASE (например, `MAX_ITEMS`)
+- CSS классы: kebab-case для BEM (например, `user-profile__avatar`)
+
+## 4. Тестирование
+
+Используем Jest и React Testing Library.
+
+### Правила тестирования
+
+- Каждый компонент должен иметь unit-тесты
+- Называйте тестовые файлы `ComponentName.test.tsx`
+- Группируйте тесты с помощью `describe`
+- Используйте говорящие названия для тестов
+
+Пример:
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+});
+```
+
+## 5. Git Flow
+
+1. Создайте ветку для задачи: `feature/add-user-profile`
+2. Делайте коммиты с осмысленными сообщениями
+3. Создайте Pull Request (PR) в `main`
+4. Пройдите code review
+5. После апрува, выполните merge в `main`
+
+### Правила коммитов
+
+Используйте префиксы для коммитов:
+
+- `feat:` для новых функций
+- `fix:` для исправления багов
+- `refactor:` для рефакторинга
+- `docs:` для обновления документации
+
+Пример: `feat: add user profile page`
+
+Помните о регулярных пушах в удаленный репозиторий для бэкапа и синхронизации с командой.

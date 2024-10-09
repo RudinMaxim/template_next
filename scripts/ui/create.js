@@ -4,7 +4,7 @@ const readline = require('readline');
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 const componentTypes = ['ui', 'widget'];
@@ -42,7 +42,7 @@ function askQuestion(question) {
 
 async function generateUIComponent(type, name) {
   const baseDir = path.join('src', type === 'ui' ? 'shared/ui' : 'widgets', name);
-  
+
   // Проверка на существование компонента
   if (fs.existsSync(baseDir)) {
     console.log(`Компонент ${name} уже существует. Пожалуйста, выберите другое имя.`);

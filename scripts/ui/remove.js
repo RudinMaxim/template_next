@@ -4,7 +4,7 @@ const readline = require('readline');
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 const componentTypes = ['ui', 'widget'];
@@ -29,7 +29,6 @@ function removeDirectory(dir) {
   }
 }
 
-
 function updateRootIndexFile(type, componentName) {
   const rootIndexPath = path.join('src', type === 'ui' ? 'shared/ui' : 'widgets', 'index.ts');
   if (fs.existsSync(rootIndexPath)) {
@@ -42,7 +41,7 @@ function updateRootIndexFile(type, componentName) {
 
 async function deleteUIComponent(type, name) {
   const baseDir = path.join('src', type === 'ui' ? 'shared/ui' : 'widgets', name);
-  
+
   if (!fs.existsSync(baseDir)) {
     console.log(`Компонент ${name} не существует.`);
     return;
@@ -61,7 +60,9 @@ async function deleteUIComponent(type, name) {
 }
 
 async function promptUser() {
-  const type = await askQuestion(`Выберите тип компонента для удаления (${componentTypes.join('/')}): `);
+  const type = await askQuestion(
+    `Выберите тип компонента для удаления (${componentTypes.join('/')}): `
+  );
   if (!componentTypes.includes(type)) {
     console.log('Неверный тип компонента. Пожалуйста, выберите из предложенных вариантов.');
     return promptUser();
