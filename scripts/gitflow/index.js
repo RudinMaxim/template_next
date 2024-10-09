@@ -1,10 +1,9 @@
-
 const { askQuestion } = require('./prompts');
 const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 
 async function manageBranch() {
-  const actionType = ['create', 'delete', 'switch']
+  const actionType = ['create', 'delete', 'switch'];
 
   const action = await askQuestion('Выберите действие:', actionType);
   const branchType = await askQuestion('Выберите тип ветки:', config.branchTypes);
@@ -14,7 +13,9 @@ async function manageBranch() {
   const taskNumber = await askQuestion('Введите номер задачи (если есть, оставьте пустым): ');
 
   // Формируем полное имя ветки, добавляя номер задачи, если он введён
-  const fullBranchName = taskNumber ? `${branchType}/${taskNumber}-${branchName}` : `${branchType}/${branchName}`;
+  const fullBranchName = taskNumber
+    ? `${branchType}/${taskNumber}-${branchName}`
+    : `${branchType}/${branchName}`;
 
   switch (action) {
     case actionType[0]:
@@ -94,7 +95,9 @@ async function mergeBranch() {
     return;
   }
 
-  const sourceBranch = targetBranch ? currentBranch : await askQuestion('Исходная ветвь для слияния:');
+  const sourceBranch = targetBranch
+    ? currentBranch
+    : await askQuestion('Исходная ветвь для слияния:');
   const finalTargetBranch = targetBranch || currentBranch;
 
   if (targetBranch) {
