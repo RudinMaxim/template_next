@@ -13,22 +13,18 @@
     "format": "prettier --write .",
     "test:watch": "jest --watch",
     "prepare": "husky install",
-    "create:page": "node ./scripts/page/create.js",
-    "remove:page": "node ./scripts/page/remove.js",
-    "create:ui": "node ./scripts/ui/create.js",
-    "remove:ui": "node ./scripts/ui/remove.js",
-    "create:feature": "node ./scripts/feature/create.js",
-    "remove:feature": "node ./scripts/feature/remove.js",
-    "create:entity": "node ./scripts/entity/create.js",
-    "remove:entity": "node ./scripts/entity/remove.js",
-    "git-flow": "node ./scripts/git-flow.js"
+    "create:element": "node ./scripts/elements/create.js",
+    "lister:element": "node ./scripts/elements/lister.js",
+    "remover:element": "node ./scripts/elements/remover.js",
+    "git-flow": "node ./scripts/gitflow/index.js"
   },
   "dependencies": {
     "axios": "^1.7.7",
     "gsap": "^3.12.5",
     "next": "14.2.15",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -50,6 +46,7 @@
     "jest-environment-jsdom": "^29.4.3",
     "lint-staged": "^13.1.2",
     "prettier": "^3.3.3",
+    "sass": "^1.79.4",
     "stylelint": "^15.2.0",
     "stylelint-config-standard": "^30.0.1",
     "typescript": "^5"

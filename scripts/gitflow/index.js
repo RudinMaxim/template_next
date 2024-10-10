@@ -61,6 +61,7 @@ async function pushChanges() {
     console.log(`Изменения перенесены на origin/${currentBranch}`);
   }
 }
+
 // TODO: Implement functionality here
 // async function createPullRequest() {
 //   const ghInstalled = executeCommand('gh --version');
