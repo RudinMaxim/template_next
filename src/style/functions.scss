@@ -1,0 +1,15 @@
+@use 'sass:math';
+
+
+@function vw($value, $base: 1920) {
+    @return $value / $base * 100dvw;
+}
+
+@function vh($value, $base: 1080) {
+    @return $value / $base * 100dvh;
+}
+
+@function rem($size, $root-font-size: 16) {
+    @return unit($size, $root-font-size) * 1rem;
+}
+
