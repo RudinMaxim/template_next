@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { askQuestion } = require('../gitflow/prompts');
+const { askQuestion } = require('../prompts');
 
 const componentTypes = ['entity', 'feature', 'page', 'ui', 'widget'];
 
@@ -250,7 +250,7 @@ export function ${segments[segments.length - 1]}Page() {
   console.log(`Страница ${route} успешно создана.`);
 }
 
-async function generateUIComponent(type, name) {
+async function generateUIComponent(type, name, useHook) {
   const baseDir = path.join('src', type === 'ui' ? 'shared/ui' : 'widgets', name);
 
   if (fs.existsSync(baseDir)) {
@@ -259,29 +259,31 @@ async function generateUIComponent(type, name) {
   }
 
   createDirectory(baseDir);
+  createDirectory(path.join(baseDir, '__tests__'));
 
   const componentContent = `import React from 'react';
 import styles from './${name}.module.scss';
-import { use${name} } from './use${name}';
+${useHook ? `import { use${name} } from './use${name}';` : ''}
 
 interface I${name}Props {
   // Определите пропсы здесь
 }
 
-export function ${name}({}: I${name}Props) {
-  const {} = use${name}();
+export function ${name}View({}: I${name}Props) {
+  ${useHook ? `const {} = use${name}();` : ''}
 
   return (
-    <div className={styles.root}>
+    <div className={styles.${name.toLowerCase()}}>
       <h2>${name}</h2>
       {/* Добавьте содержимое компонента здесь */}
     </div>
   );
 }
 `;
-  createFile(path.join(baseDir, `${name}.tsx`), componentContent);
+  createFile(path.join(baseDir, `${name}View.tsx`), componentContent);
 
-  const hookContent = `interface I${name}HookResult {
+  if (useHook) {
+    const hookContent = `interface I${name}HookResult {
   // Определите возвращаемые значения хука здесь
 }
 
@@ -292,30 +294,48 @@ export function use${name}(): I${name}HookResult {
   };
 }
 `;
-  createFile(path.join(baseDir, `use${name}.ts`), hookContent);
+    createFile(path.join(baseDir, `use${name}.ts`), hookContent);
 
-  const styleContent = `.root {
+    const hookTestContent = `import { renderHook } from '@testing-library/react';
+
+import { use${name} } from '../use${name}';
+
+describe('use${name}', () => {
+  it('returns the expected result', () => {
+    const { result } = renderHook(() => use${name}());
+    // Добавьте проверки для возвращаемых значений хука
+    expect(result.current).toBeDefined();
+  });
+
+  // Добавьте дополнительные тесты для логики хука
+});
+`;
+    createFile(path.join(baseDir, '__tests__', `use${name}.test.ts`), hookTestContent);
+  }
+
+  const styleContent = `.${name.toLowerCase()} {
+  $root: &;
   // Добавьте базовые стили здесь
 }
 `;
   createFile(path.join(baseDir, `${name}.module.scss`), styleContent);
 
-  const testContent = `import React from 'react';
+  const viewTestContent = `import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ${name} } from './${name}';
+import { ${name}View } from '../${name}View';
 
-describe('${name}', () => {
+describe('${name}View', () => {
   it('renders correctly', () => {
-    render(<${name} />);
+    render(<${name}View />);
     expect(screen.getByText('${name}')).toBeInTheDocument();
   });
 
-  // Добавьте дополнительные тесты здесь
+  // Добавьте дополнительные тесты для отображения
 });
 `;
-  createFile(path.join(baseDir, `${name}.test.tsx`), testContent);
+  createFile(path.join(baseDir, '__tests__', `${name}View.test.tsx`), viewTestContent);
 
-  const indexContent = `export * from './${name}';
+  const indexContent = `export { ${name}View as ${name} } from './${name}View';
 `;
   createFile(path.join(baseDir, 'index.ts'), indexContent);
 
@@ -329,32 +349,33 @@ async function generateApiRoute(routeName) {
 
   const routeContent = `import { NextRequest, NextResponse } from 'next/server';
   
-  export async function GET(request: NextRequest) {
-    // Логика для GET запроса
-    return NextResponse.json({ message: 'GET request received' });
-  }
-  
-  export async function POST(request: NextRequest) {
-    // Логика для POST запроса
-    const body = await request.json();
-    return NextResponse.json({ message: 'POST request received', data: body });
-  }
-  
-  export async function PUT(request: NextRequest) {
-    // Логика для PUT запроса
-    const body = await request.json();
-    return NextResponse.json({ message: 'PUT request received', data: body });
-  }
-  
-  export async function DELETE(request: NextRequest) {
-    // Логика для DELETE запроса
-    return NextResponse.json({ message: 'DELETE request received' });
-  }
-  `;
+export async function GET(request: NextRequest) {
+  // Логика для GET запроса
+  return NextResponse.json({ message: 'GET request received' });
+}
+
+export async function POST(request: NextRequest) {
+  // Логика для POST запроса
+  const body = await request.json();
+  return NextResponse.json({ message: 'POST request received', data: body });
+}
+
+export async function PUT(request: NextRequest) {
+  // Логика для PUT запроса
+  const body = await request.json();
+  return NextResponse.json({ message: 'PUT request received', data: body });
+}
+
+export async function DELETE(request: NextRequest) {
+  // Логика для DELETE запроса
+  return NextResponse.json({ message: 'DELETE request received' });
+}
+`;
 
   createFile(path.join(apiPath, 'route.ts'), routeContent);
   console.log(`API route ${routeName} успешно создан.`);
 }
+
 async function promptUser() {
   const typeMap = {
     entity: { prompt: 'сущности', generator: generateEntity },
@@ -378,7 +399,12 @@ async function promptUser() {
       name = await askQuestion(`Введите имя ${typeMap[type].prompt}: `);
     } while (!(await validateComponentName(name)));
 
-    await typeMap[type].generator(type === 'ui' || type === 'widget' ? type : name, name);
+    if (type === 'ui' || type === 'widget') {
+      const useHook = await askQuestion('Нужен ли хук для компонента?', ['Да', 'Нет']) === 'Да';
+      await typeMap[type].generator(type, name, useHook);
+    } else {
+      await typeMap[type].generator(name);
+    }
   }
 
   const createAnother = await askQuestion('Хотите создать еще один компонент?', ['Да', 'Нет']);

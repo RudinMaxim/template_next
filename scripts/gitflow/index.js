@@ -1,4 +1,4 @@
-const { askQuestion } = require('./prompts');
+const { askQuestion } = require('../prompts');
 const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 

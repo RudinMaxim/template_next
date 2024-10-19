@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
-const { askQuestion } = require('../gitflow/prompts');
+const { askQuestion } = require('../prompts');
 
 const componentTypes = ['entity', 'feature', 'page', 'ui', 'widget', 'api'];
 

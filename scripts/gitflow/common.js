@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');
-const { askQuestion } = require('./prompts');
+const { askQuestion } = require('../prompts');
 
 function executeCommand(command) {
   try {
