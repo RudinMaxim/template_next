@@ -3,7 +3,7 @@ const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 
 async function manageBranch() {
-  const actionType = ['create', 'delete', 'switch'];
+  const actionType = ['create', 'delete', 'switch', 'create from'];
 
   const action = await askQuestion('Выберите действие:', actionType);
   const branchType = await askQuestion('Выберите тип ветки:', config.branchTypes);
@@ -18,17 +18,26 @@ async function manageBranch() {
     : `${branchType}/${branchName}`;
 
   switch (action) {
-    case actionType[0]:
+    case actionType[0]: // create
+      executeCommand(`git checkout develop`); // Переключаемся на develop
+      executeCommand(`git pull origin develop`); // Подтягиваем последние изменения
       executeCommand(`git checkout -b ${fullBranchName}`);
-      console.log(`Создано и переключено на ветку: ${fullBranchName}`);
+      console.log(`Создано и переключено на ветку: ${fullBranchName} от develop`);
       break;
-    case actionType[1]:
+    case actionType[1]: // delete
       executeCommand(`git branch -d ${fullBranchName}`);
       console.log(`Удалена ветка: ${fullBranchName}`);
       break;
-    case actionType[3]:
+    case actionType[2]: // switch
       executeCommand(`git checkout ${fullBranchName}`);
       console.log(`Переключено на ветку: ${fullBranchName}`);
+      break;
+    case actionType[3]: // create from
+      const sourceBranch = await askQuestion('Введите имя исходной ветки: ');
+      executeCommand(`git checkout ${sourceBranch}`);
+      executeCommand(`git pull origin ${sourceBranch}`);
+      executeCommand(`git checkout -b ${fullBranchName}`);
+      console.log(`Создано и переключено на ветку: ${fullBranchName} от ${sourceBranch}`);
       break;
     default:
       console.log('Неизвестное действие');
@@ -131,7 +140,7 @@ async function undoLastAction() {
 }
 
 async function main() {
-  console.log('Only Git Flow Automation');
+  console.log('Git Flow Automation');
 
   let running = true;
   while (running) {
@@ -160,7 +169,7 @@ async function main() {
         await undoLastAction();
         break;
       case config.choiceTypes[6]:
-        console.log('Выход из Only Git Flow Automation');
+        console.log('Выход из Git Flow Automation');
         running = false;
         break;
       default:
