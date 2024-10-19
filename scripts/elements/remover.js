@@ -68,7 +68,7 @@ async function promptUser() {
   };
 
   const type = await askQuestion('Выберите тип компонента для удаления:', componentTypes);
-  
+
   const components = getComponentList(type);
   if (components.length === 0) {
     console.log(`Нет доступных компонентов типа ${type} для удаления.`);
@@ -80,8 +80,10 @@ async function promptUser() {
     console.log(`${index + 1}. ${component}`);
   });
 
-  const componentIndex = await askQuestion(`Выберите номер ${typeMap[type]} для удаления (или введите имя вручную): `);
-  
+  const componentIndex = await askQuestion(
+    `Выберите номер ${typeMap[type]} для удаления (или введите имя вручную): `
+  );
+
   let name;
   if (!isNaN(componentIndex) && componentIndex > 0 && componentIndex <= components.length) {
     name = components[componentIndex - 1];
@@ -101,4 +103,3 @@ async function promptUser() {
 
 console.log('Добро пожаловать в инструмент удаления FSD компонентов!');
 promptUser();
-

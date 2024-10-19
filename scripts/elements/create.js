@@ -356,37 +356,38 @@ async function generateApiRoute(routeName) {
   console.log(`API route ${routeName} успешно создан.`);
 }
 async function promptUser() {
-    const typeMap = {
-      entity: { prompt: 'сущности', generator: generateEntity },
-      feature: { prompt: 'фичи', generator: generateFeature },
-      ui: { prompt: 'UI компонента', generator: generateUIComponent },
-      widget: { prompt: 'виджета', generator: generateUIComponent },
-      page: { prompt: 'страницы', generator: generatePage },
-      api: { prompt: 'API route', generator: generateApiRoute },
-    };
-  
-    const type = await askQuestion('Выберите тип компонента:', Object.keys(typeMap));
-    
-    if (type === 'page' || type === 'api') {
-      const route = await askQuestion(`Введите маршрут для нового ${typeMap[type].prompt} (например, users или posts/[id]): `);
-      await typeMap[type].generator(route);
-    } else {
-      let name;
-      do {
-        name = await askQuestion(`Введите имя ${typeMap[type].prompt}: `);
-      } while (!(await validateComponentName(name)));
-      
-      await typeMap[type].generator(type === 'ui' || type === 'widget' ? type : name, name);
-    }
-  
-    const createAnother = await askQuestion('Хотите создать еще один компонент?', ['Да', 'Нет']);
-    if (createAnother === 'Да') {
-      await promptUser();
-    } else {
-      console.log('Спасибо за использование генератора компонентов!');
-    }
+  const typeMap = {
+    entity: { prompt: 'сущности', generator: generateEntity },
+    feature: { prompt: 'фичи', generator: generateFeature },
+    ui: { prompt: 'UI компонента', generator: generateUIComponent },
+    widget: { prompt: 'виджета', generator: generateUIComponent },
+    page: { prompt: 'страницы', generator: generatePage },
+    api: { prompt: 'API route', generator: generateApiRoute },
+  };
+
+  const type = await askQuestion('Выберите тип компонента:', Object.keys(typeMap));
+
+  if (type === 'page' || type === 'api') {
+    const route = await askQuestion(
+      `Введите маршрут для нового ${typeMap[type].prompt} (например, users или posts/[id]): `
+    );
+    await typeMap[type].generator(route);
+  } else {
+    let name;
+    do {
+      name = await askQuestion(`Введите имя ${typeMap[type].prompt}: `);
+    } while (!(await validateComponentName(name)));
+
+    await typeMap[type].generator(type === 'ui' || type === 'widget' ? type : name, name);
   }
-  
+
+  const createAnother = await askQuestion('Хотите создать еще один компонент?', ['Да', 'Нет']);
+  if (createAnother === 'Да') {
+    await promptUser();
+  } else {
+    console.log('Спасибо за использование генератора компонентов!');
+  }
+}
 
 console.log('Добро пожаловать в улучшенный генератор компонентов!');
 promptUser();

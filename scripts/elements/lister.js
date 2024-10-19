@@ -16,18 +16,19 @@ function listComponents(type) {
   const componentPath = basePath[type];
 
   if (fs.existsSync(componentPath)) {
-    const components = fs.readdirSync(componentPath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
+    const components = fs
+      .readdirSync(componentPath, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
 
     console.log(`Список ${type}:`);
-    components.forEach(component => console.log(`- ${component}`));
+    components.forEach((component) => console.log(`- ${component}`));
   } else {
     console.log(`Директория для ${type} не найдена.`);
   }
 }
 
-componentTypes.forEach(type => {
+componentTypes.forEach((type) => {
   console.log('\n');
   listComponents(type);
 });
