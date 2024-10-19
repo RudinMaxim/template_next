@@ -3,7 +3,7 @@ const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 
 async function manageBranch() {
-  const actionType = ['create', 'delete', 'switch', 'create from'];
+  const actionType = ['create', 'create from', 'delete', 'switch'];
 
   const action = await askQuestion('Выберите действие:', actionType);
   const branchType = await askQuestion('Выберите тип ветки:', config.branchTypes);
@@ -24,20 +24,20 @@ async function manageBranch() {
       executeCommand(`git checkout -b ${fullBranchName}`);
       console.log(`Создано и переключено на ветку: ${fullBranchName} от develop`);
       break;
-    case actionType[1]: // delete
-      executeCommand(`git branch -d ${fullBranchName}`);
-      console.log(`Удалена ветка: ${fullBranchName}`);
-      break;
-    case actionType[2]: // switch
-      executeCommand(`git checkout ${fullBranchName}`);
-      console.log(`Переключено на ветку: ${fullBranchName}`);
-      break;
-    case actionType[3]: // create from
+    case actionType[1]: // create from
       const sourceBranch = await askQuestion('Введите имя исходной ветки: ');
       executeCommand(`git checkout ${sourceBranch}`);
       executeCommand(`git pull origin ${sourceBranch}`);
       executeCommand(`git checkout -b ${fullBranchName}`);
       console.log(`Создано и переключено на ветку: ${fullBranchName} от ${sourceBranch}`);
+      break;
+    case actionType[2]: // delete
+      executeCommand(`git branch -d ${fullBranchName}`);
+      console.log(`Удалена ветка: ${fullBranchName}`);
+      break;
+    case actionType[3]: // switch
+      executeCommand(`git checkout ${fullBranchName}`);
+      console.log(`Переключено на ветку: ${fullBranchName}`);
       break;
     default:
       console.log('Неизвестное действие');
