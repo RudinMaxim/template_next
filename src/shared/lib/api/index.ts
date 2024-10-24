@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios';
 
-import { axiosConfig } from '../config';
+import { axiosConfig } from '@/shared/config';
 
 type ApiResponse<T> = {
   data: T | null;
@@ -27,16 +27,16 @@ const request = async <T>(
         response: axiosError.response as AxiosResponse<T> | null,
       };
     }
-    return { data: null, error: 'Неизвестная ошибка', response: null };
+    return { data: null, error: 'Unknown error', response: null };
   }
 };
 
 export const GET = <T>(url: string, config?: AxiosRequestConfig) => request<T>('GET', url, config);
 
-export const POST = <T>(url: string, data?: never, config?: AxiosRequestConfig) =>
+export const POST = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
   request<T>('POST', url, { ...config, data });
 
-export const PUT = <T>(url: string, data?: never, config?: AxiosRequestConfig) =>
+export const PUT = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
   request<T>('PUT', url, { ...config, data });
 
 export const DELETE = <T>(url: string, config?: AxiosRequestConfig) =>

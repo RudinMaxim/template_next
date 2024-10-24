@@ -1,5 +1,4 @@
 import { axiosConfig } from './axios';
+import {METRIKA_CONFIG} from './metrika'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-export { axiosConfig, BASE_URL };
+export { axiosConfig, METRIKA_CONFIG as metrikaConfig };
