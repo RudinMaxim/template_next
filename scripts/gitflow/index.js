@@ -1,10 +1,9 @@
-
-const { askQuestion } = require('./prompts');
+const { askQuestion } = require('../prompts');
 const { executeCommand, checkRepoStatus, updateBranch } = require('./common');
 const config = require('./config');
 
 async function manageBranch() {
-  const actionType = ['create', 'delete', 'switch']
+  const actionType = ['create', 'create from', 'delete', 'switch'];
 
   const action = await askQuestion('Выберите действие:', actionType);
   const branchType = await askQuestion('Выберите тип ветки:', config.branchTypes);
@@ -14,18 +13,29 @@ async function manageBranch() {
   const taskNumber = await askQuestion('Введите номер задачи (если есть, оставьте пустым): ');
 
   // Формируем полное имя ветки, добавляя номер задачи, если он введён
-  const fullBranchName = taskNumber ? `${branchType}/${taskNumber}-${branchName}` : `${branchType}/${branchName}`;
+  const fullBranchName = taskNumber
+    ? `${branchType}/${taskNumber}-${branchName}`
+    : `${branchType}/${branchName}`;
 
   switch (action) {
-    case actionType[0]:
+    case actionType[0]: // create
+      executeCommand(`git checkout develop`); // Переключаемся на develop
+      executeCommand(`git pull origin develop`); // Подтягиваем последние изменения
       executeCommand(`git checkout -b ${fullBranchName}`);
-      console.log(`Создано и переключено на ветку: ${fullBranchName}`);
+      console.log(`Создано и переключено на ветку: ${fullBranchName} от develop`);
       break;
-    case actionType[1]:
+    case actionType[1]: // create from
+      const sourceBranch = await askQuestion('Введите имя исходной ветки: ');
+      executeCommand(`git checkout ${sourceBranch}`);
+      executeCommand(`git pull origin ${sourceBranch}`);
+      executeCommand(`git checkout -b ${fullBranchName}`);
+      console.log(`Создано и переключено на ветку: ${fullBranchName} от ${sourceBranch}`);
+      break;
+    case actionType[2]: // delete
       executeCommand(`git branch -d ${fullBranchName}`);
       console.log(`Удалена ветка: ${fullBranchName}`);
       break;
-    case actionType[3]:
+    case actionType[3]: // switch
       executeCommand(`git checkout ${fullBranchName}`);
       console.log(`Переключено на ветку: ${fullBranchName}`);
       break;
@@ -46,6 +56,13 @@ async function commitChanges() {
 
 async function pushChanges() {
   const currentBranch = executeCommand('git rev-parse --abbrev-ref HEAD').trim();
+  const status = executeCommand('git status --porcelain').trim();
+
+  if (status === '') {
+    console.log('Нет изменений для отправки на удаленный репозиторий.');
+    return;
+  }
+
   const shouldPush = await askQuestion(`Внести изменения в origin/${currentBranch}? (y/n): `);
 
   if (shouldPush.toLowerCase() === 'y') {
@@ -94,7 +111,9 @@ async function mergeBranch() {
     return;
   }
 
-  const sourceBranch = targetBranch ? currentBranch : await askQuestion('Исходная ветвь для слияния:');
+  const sourceBranch = targetBranch
+    ? currentBranch
+    : await askQuestion('Исходная ветвь для слияния:');
   const finalTargetBranch = targetBranch || currentBranch;
 
   if (targetBranch) {
@@ -121,7 +140,7 @@ async function undoLastAction() {
 }
 
 async function main() {
-  console.log('Only Git Flow Automation');
+  console.log('Git Flow Automation');
 
   let running = true;
   while (running) {
@@ -150,7 +169,7 @@ async function main() {
         await undoLastAction();
         break;
       case config.choiceTypes[6]:
-        console.log('Выход из Only Git Flow Automation');
+        console.log('Выход из Git Flow Automation');
         running = false;
         break;
       default:
