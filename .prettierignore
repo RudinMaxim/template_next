@@ -1,8 +1,0 @@
-package.json
-package-lock.json
-.eslintrc.json
-tsconfig.json
-node_modules
-dist
-build
-.next
