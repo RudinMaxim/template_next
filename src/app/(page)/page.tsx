@@ -1,3 +1,9 @@
+import { Input } from "@/shared/ui";
+
 export default function Home() {
-  return <h1>awda</h1>;
+  return (
+    <main>
+      <Input />
+    </main>
+  );
 }
