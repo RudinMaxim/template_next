@@ -1,0 +1,27 @@
+FROM golang:1.23-alpine AS build
+
+WORKDIR /app
+
+# Copy go.mod and go.sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the application in dev mode
+RUN go build -o myapp -ldflags "-X main.version=$(git describe --tags --always --dirty)"
+
+# Use a smaller base image for runtime
+FROM alpine:latest
+
+# Copy the compiled binary from the build stage
+COPY --from=build /app/myapp /app/myapp
+
+# Expose the port
+EXPOSE 8080
+
+# Start the application in dev mode with hot-reload
+CMD ["air", "-c", ".air.toml"]

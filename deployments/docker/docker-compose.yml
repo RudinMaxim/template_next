@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: deployments/docker/Dockerfile.dev
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/app
+    environment:
+      - ENV=dev
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - kafka-schema-registry
+      - kafka-init
+
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=myapp
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    
+  redis:
+    image: redis:6-alpine
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.0
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
+    depends_on:
+      - kafka
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.3.0
+    command: >
+      /bin/sh -c "
+        /opt/kafka/bin/kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic mytopic && 
+        /opt/kafka/bin/kafka-configs --bootstrap-server kafka:9092 --entity-type topics --entity-name mytopic --describe"
+    depends_on:
+      - kafka
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  backup:
+    image: restic/restic
+    command: ["backup", "/data", "--repo", "s3:https://my-s3-bucket.amazonaws.com/backups", "--password-file", "/etc/restic/password.txt"]
+    volumes:
+      - postgres-data:/data:ro
+      - ./deployments/docker/restic/password.txt:/etc/restic/password.txt
+    environment:
+      AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+      AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+volumes:
+  postgres-data:

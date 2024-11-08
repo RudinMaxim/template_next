@@ -1,0 +1,18 @@
+# Set the root directory for the application
+root = "."
+
+# Set the build command
+build = "go build -o myapp ."
+
+# Set the run command
+run = "./myapp"
+
+# Specify the files or directories to watch for changes
+watch_dirs = ["./"]
+watch_exts = ["*.go", "*.tpl", "*.tmpl", "*.html"]
+
+# Specify the signal to use for reloading (usually SIGFPE)
+signal = "SIGFPE"
+
+# Specify the delay before reloading the application
+delay = 1000 # milliseconds
