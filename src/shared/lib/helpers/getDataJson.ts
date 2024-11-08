@@ -43,9 +43,3 @@ export const getDataJson = <T extends BaseJsonData>(
     throw error;
   }
 };
-
-export interface HomePageData extends BaseJsonData {
-    header: string;
-    title: string;
-    description: string;
-}

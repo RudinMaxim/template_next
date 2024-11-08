@@ -1,7 +1,7 @@
 import Script from 'next/script';
 
 import { metrikaConfig } from '@/shared/config';
-import { isDevelopment, debugLog, isLocalhost } from '@/shared/utils';
+import { isDevelopment, debugLog, isLocalhost } from '@/shared/lib/utils';
 
 type YandexMetricsGoalType = 'FORM_SUBMIT' | 'PHONE_CALL' | 'SOCIAL_CLICK';
 
