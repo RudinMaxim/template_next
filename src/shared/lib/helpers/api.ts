@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios';
 
-import { axiosConfig } from '@/app/config';
+import { axiosConfig } from '@/shared/config';
 
 type ApiResponse<T> = {
   data: T | null;

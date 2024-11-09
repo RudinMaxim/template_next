@@ -18,6 +18,7 @@
     "git-flow": "node ./scripts/gitflow/index.js"
   },
   "dependencies": {
+    "@yandex/smart-captcha": "2.6.0",
     "axios": "^1.7.7",
     "gsap": "^3.12.5",
     "next": "14.2.15",

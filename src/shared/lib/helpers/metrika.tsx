@@ -1,6 +1,6 @@
 import Script from 'next/script';
 
-import { metrikaConfig } from '@/app/config';
+import { METRIKA_CONFIG } from '@/shared/config';
 import { isDevelopment, debugLog, isLocalhost } from '@/shared/lib/utils';
 
 type YandexMetricsGoalType = 'FORM_SUBMIT' | 'PHONE_CALL' | 'SOCIAL_CLICK';
@@ -133,15 +133,15 @@ export const YandexMetrikaScript: React.FC = () => {
             m[i].l=1*new Date();
             for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
             k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "${metrikaConfig.scriptUrl}", "ym");
-            ym(${counterId}, "init", ${JSON.stringify(metrikaConfig.defaultOptions)});
+            (window, document, "script", "${METRIKA_CONFIG.scriptUrl}", "ym");
+            ym(${counterId}, "init", ${JSON.stringify(METRIKA_CONFIG.defaultOptions)});
           `}
       </Script>
       <noscript>
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${metrikaConfig.counterUrl}/${counterId}`}
+            src={`${METRIKA_CONFIG.counterUrl}/${counterId}`}
             style={{ position: 'absolute', left: '-9999px' }}
             alt=""
           />
