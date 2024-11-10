@@ -52,12 +52,25 @@ func (a *App) Initialize() error {
 }
 
 func (a *App) initLogger() error {
-	logDir := "../../logs"
+	logDir := a.config.Logger.Dir
+	logFileName := a.config.Logger.FileName
+
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		return fmt.Errorf("failed to create log directory: %w", err)
 	}
 
-	logFile := filepath.Join(logDir, "app.log")
+	logFile := filepath.Join(logDir, logFileName)
+
+	_, err := os.Stat(logFile)
+	if os.IsNotExist(err) {
+		file, err := os.Create(logFile)
+		if err != nil {
+			return fmt.Errorf("failed to create log file: %w", err)
+		}
+		file.Close()
+	} else if err != nil {
+		return fmt.Errorf("failed to check log file status: %w", err)
+	}
 
 	l, err := logger.NewLogger(a.ctx, logFile, logger.DefaultOptions())
 	if err != nil {
@@ -152,10 +165,6 @@ func (a *App) initRedis() error {
 }
 
 func (a *App) Start() error {
-	if err := a.Initialize(); err != nil {
-		return fmt.Errorf("failed to initialize app: %w", err)
-	}
-
 	serverAddr := ":" + a.config.API.Port
 	a.logger.Info(fmt.Sprintf("Starting server on %s", serverAddr))
 

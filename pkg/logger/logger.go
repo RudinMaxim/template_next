@@ -10,23 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RudinMaxim/template/internal/config"
 	"github.com/fatih/color"
 )
 
 type LogLevel = slog.Level
-
-type Options struct {
-	// Размер буфера канала логов
-	BufferSize int
-	// Количество воркеров для обработки логов
-	WorkerCount int
-	// Режим разработки (красивый вывод в консоль)
-	IsDev bool
-	// Добавлять информацию о файле и строке
-	AddSource bool
-	// Дополнительные атрибуты, которые будут добавлены ко всем логам
-	BaseAttributes []slog.Attr
-}
 
 type Logger struct {
 	logger       *slog.Logger
@@ -35,7 +23,7 @@ type Logger struct {
 	file         *os.File
 	ctx          context.Context
 	cancel       context.CancelFunc
-	opts         Options
+	opts         config.LoggerConfig
 	debugColor   *color.Color
 	infoColor    *color.Color
 	warningColor *color.Color
@@ -62,12 +50,14 @@ const (
 	LevelError = slog.LevelError
 )
 
-func DefaultOptions() Options {
-	return Options{
+func DefaultOptions() config.LoggerConfig {
+	return config.LoggerConfig{
 		BufferSize:  1000,
-		WorkerCount: runtime.NumCPU(),
+		WorkerCount: 1,
 		IsDev:       false,
 		AddSource:   true,
+		Dir:         "./loge",
+		FileName:    "app.log",
 		BaseAttributes: []slog.Attr{
 			slog.String("service", "myapp"),
 			slog.String("environment", "production"),
@@ -75,7 +65,7 @@ func DefaultOptions() Options {
 	}
 }
 
-func NewLogger(ctx context.Context, filename string, opts Options) (*Logger, error) {
+func NewLogger(ctx context.Context, filename string, opts config.LoggerConfig) (*Logger, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}

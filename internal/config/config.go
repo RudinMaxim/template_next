@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -14,6 +15,7 @@ type Config struct {
 	API      APIConfig      `mapstructure:"api"`
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	Redis    RedisConfig    `mapstructure:"redis"`
+	Logger   LoggerConfig   `mapstructure:"logger"`
 }
 
 type NodeConfig struct {
@@ -23,6 +25,16 @@ type NodeConfig struct {
 type APIConfig struct {
 	Port string `mapstructure:"port"`
 	URL  string `mapstructure:"url"`
+}
+
+type LoggerConfig struct {
+	BufferSize     int         `mapstructure:"buffer_size"`
+	WorkerCount    int         `mapstructure:"worker_count"`
+	IsDev          bool        `mapstructure:"is_dev"`
+	AddSource      bool        `mapstructure:"add_source"`
+	BaseAttributes []slog.Attr `mapstructure:"base_attributes"`
+	Dir            string      `mapstructure:"dir"`
+	FileName       string      `mapstructure:"fileName"`
 }
 
 type PostgresConfig struct {
@@ -81,6 +93,10 @@ func (cl *ConfigLoader) initializeOptions() {
 		// API options
 		{Key: "api.port", EnvKey: "API_PORT", DefaultValue: "8080"},
 		{Key: "api.url", EnvKey: "API_URL", DefaultValue: "http://localhost"},
+
+		// Logger
+		{Key: "logger.dir", EnvKey: "", DefaultValue: "logs"},
+		{Key: "logger.filename", EnvKey: "", DefaultValue: "app.log"},
 
 		// Postgres options
 		{Key: "postgres.host", EnvKey: "POSTGRES_HOST", DefaultValue: "localhost"},
@@ -146,11 +162,9 @@ func (cl *ConfigLoader) setDefaults() error {
 func (cl *ConfigLoader) loadConfigFile() error {
 	cl.v.SetConfigName("config")
 	cl.v.SetConfigType("yaml")
-
 	cl.v.AddConfigPath(".")
 	cl.v.AddConfigPath("./config")
 	cl.v.AddConfigPath("../config")
-
 	cl.v.AutomaticEnv()
 
 	if err := cl.v.ReadInConfig(); err != nil {
