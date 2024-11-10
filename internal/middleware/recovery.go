@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/BeautySync/BS_CatalogNode/pkg/logger"
+	"github.com/RudinMaxim/template/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
 type RecoveryConfig struct {
-	Logger logger.AsyncLogger
+	Logger *logger.Logger
 }
 
 func Recovery(config *RecoveryConfig) gin.HandlerFunc {

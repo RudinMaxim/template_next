@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	API  APIConfig  `mapstructure:"api"`
-	Node NodeConfig `mapstructure:"node"`
+	Node     NodeConfig     `mapstructure:"node"`
+	API      APIConfig      `mapstructure:"api"`
+	Postgres PostgresConfig `mapstructure:"postgres"`
+	Redis    RedisConfig    `mapstructure:"redis"`
+}
+
+type NodeConfig struct {
+	Mode string `mapstructure:"mode"`
 }
 
 type APIConfig struct {
@@ -18,17 +25,86 @@ type APIConfig struct {
 	URL  string `mapstructure:"url"`
 }
 
-type NodeConfig struct {
-	Mode string `mapstructure:"mode"`
+type PostgresConfig struct {
+	Host            string        `mapstructure:"host"`
+	Port            string        `mapstructure:"port"`
+	User            string        `mapstructure:"user"`
+	Password        string        `mapstructure:"password"`
+	DBName          string        `mapstructure:"dbname"`
+	MaxIdleConns    int           `mapstructure:"max_idle_conns"`
+	MaxOpenConns    int           `mapstructure:"max_open_conns"`
+	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
+	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
+	RetryAttempts   int           `mapstructure:"retry_attempts"`
+	RetryDelay      time.Duration `mapstructure:"retry_delay"`
+	SSLMode         string        `mapstructure:"sslmode"`
+	Debug           bool          `mapstructure:"debug"`
+}
+
+type RedisConfig struct {
+	Host         string `mapstructure:"host"`
+	Port         string `mapstructure:"port"`
+	Password     string `mapstructure:"password"`
+	DB           int    `mapstructure:"db"`
+	PoolSize     int    `mapstructure:"pool_size"`
+	MinIdleConns int    `mapstructure:"min_idle_conns"`
+	DefaultTTL   int    `mapstructure:"default_ttl"`
+	OrderTTL     int    `mapstructure:"order_ttl"`
+	Enabled      bool   `mapstructure:"enabled"`
+}
+
+type ConfigOption struct {
+	Key          string
+	DefaultValue interface{}
+	EnvKey       string
 }
 
 type ConfigLoader struct {
-	v *viper.Viper
+	v       *viper.Viper
+	options []ConfigOption
 }
 
 func NewConfigLoader() *ConfigLoader {
-	return &ConfigLoader{
-		v: viper.New(),
+	cl := &ConfigLoader{
+		v:       viper.New(),
+		options: make([]ConfigOption, 0),
+	}
+	cl.initializeOptions()
+	return cl
+}
+
+func (cl *ConfigLoader) initializeOptions() {
+	cl.options = []ConfigOption{
+		// Node options
+		{Key: "node.mode", EnvKey: "NODE_MODE", DefaultValue: "development"},
+
+		// API options
+		{Key: "api.port", EnvKey: "API_PORT", DefaultValue: "8080"},
+		{Key: "api.url", EnvKey: "API_URL", DefaultValue: "http://localhost"},
+
+		// Postgres options
+		{Key: "postgres.host", EnvKey: "POSTGRES_HOST", DefaultValue: "localhost"},
+		{Key: "postgres.port", EnvKey: "POSTGRES_PORT", DefaultValue: "5432"},
+		{Key: "postgres.user", EnvKey: "POSTGRES_USER", DefaultValue: "postgres"},
+		{Key: "postgres.password", EnvKey: "POSTGRES_PASSWORD", DefaultValue: ""},
+		{Key: "postgres.dbname", EnvKey: "POSTGRES_NAME", DefaultValue: "beautysync"},
+		{Key: "postgres.max_idle_conns", EnvKey: "", DefaultValue: 10},
+		{Key: "postgres.max_open_conns", EnvKey: "", DefaultValue: 100},
+		{Key: "postgres.conn_max_lifetime", EnvKey: "", DefaultValue: 3600},
+		{Key: "postgres.sslmode", EnvKey: "", DefaultValue: "disable"},
+
+		// Redis options
+		{Key: "redis.host", EnvKey: "REDIS_HOST", DefaultValue: "localhost"},
+		{Key: "redis.port", EnvKey: "REDIS_PORT", DefaultValue: "6379"},
+		{Key: "redis.password", EnvKey: "REDIS_PASSWORD", DefaultValue: ""},
+		{Key: "redis.db", EnvKey: "", DefaultValue: 0},
+		{Key: "redis.pool_size", EnvKey: "", DefaultValue: 10},
+		{Key: "redis.min_idle_conns", EnvKey: "", DefaultValue: 5},
+		{Key: "redis.default_ttl", EnvKey: "", DefaultValue: 300},
+		{Key: "redis.category_ttl", EnvKey: "", DefaultValue: 3600},
+		{Key: "redis.service_ttl", EnvKey: "", DefaultValue: 1800},
+		{Key: "redis.tag_ttl", EnvKey: "", DefaultValue: 3600},
+		{Key: "redis.enabled", EnvKey: "", DefaultValue: true},
 	}
 }
 
@@ -55,38 +131,15 @@ func (cl *ConfigLoader) Load() (*Config, error) {
 }
 
 func (cl *ConfigLoader) setDefaults() error {
-	cl.v.SetDefault("node.mode", getEnvOrDefault("NODE_MODE", "development"))
-
-	// API defaults
-	cl.v.SetDefault("api.port", getEnvOrDefault("API_PORT", "8080"))
-	cl.v.SetDefault("api.url", getEnvOrDefault("API_URL", "http://localhost"))
-
-	// Postgres defaults
-	cl.v.SetDefault("postgres.host", getEnvOrDefault("POSTGRES_HOST", "localhost"))
-	cl.v.SetDefault("postgres.port", getEnvOrDefault("POSTGRES_PORT", "5432"))
-	cl.v.SetDefault("postgres.user", getEnvOrDefault("POSTGRES_USER", "postgres"))
-	cl.v.SetDefault("postgres.password", getEnvOrDefault("POSTGRES_PASSWORD", ""))
-	cl.v.SetDefault("postgres.dbname", getEnvOrDefault("POSTGRES_NAME", "beautysync"))
-	cl.v.SetDefault("postgres.max_idle_conns", 10)
-	cl.v.SetDefault("postgres.max_open_conns", 100)
-	cl.v.SetDefault("postgres.conn_max_lifetime", 3600)
-	cl.v.SetDefault("postgres.sslmode", "disable")
-
-	// Redis defaults
-	cl.v.SetDefault("redis.host", getEnvOrDefault("REDIS_HOST", "localhost"))
-	cl.v.SetDefault("redis.port", getEnvOrDefault("REDIS_PORT", "6379"))
-	cl.v.SetDefault("redis.password", getEnvOrDefault("REDIS_PASSWORD", ""))
-	cl.v.SetDefault("redis.db", 0)
-	cl.v.SetDefault("redis.pool_size", 10)
-	cl.v.SetDefault("redis.min_idle_conns", 5)
-
-	// Cache defaults
-	cl.v.SetDefault("redis.default_ttl", 300)
-	cl.v.SetDefault("redis.category_ttl", 3600)
-	cl.v.SetDefault("redis.service_ttl", 1800)
-	cl.v.SetDefault("redis.tag_ttl", 3600)
-	cl.v.SetDefault("redis.enabled", true)
-
+	for _, opt := range cl.options {
+		value := opt.DefaultValue
+		if opt.EnvKey != "" {
+			if envValue, exists := os.LookupEnv(opt.EnvKey); exists {
+				value = envValue
+			}
+		}
+		cl.v.SetDefault(opt.Key, value)
+	}
 	return nil
 }
 
@@ -111,17 +164,11 @@ func (cl *ConfigLoader) loadConfigFile() error {
 	log.Printf("Using config file: %s", cl.v.ConfigFileUsed())
 	return nil
 }
+
 func (cl *ConfigLoader) createDefaultConfigFile() error {
 	if err := cl.v.SafeWriteConfig(); err != nil {
 		return fmt.Errorf("error writing default config file: %w", err)
 	}
 	log.Println("Default config file created. Please edit it with your settings and restart the application.")
 	return nil
-}
-
-func getEnvOrDefault(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
 }

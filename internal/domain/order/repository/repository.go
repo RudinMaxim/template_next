@@ -1,13 +1,13 @@
-package service
+package repository
 
 import (
 	"gorm.io/gorm"
 )
 
-type Repository struct {
+type OrderRepository struct {
 	db *gorm.DB
 }
 
-func NewRepository(db *gorm.DB) *Repository {
-	return &Repository{db: db}
+func NewRepository(db *gorm.DB) *OrderRepository {
+	return &OrderRepository{db: db}
 }

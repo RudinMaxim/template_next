@@ -3,187 +3,309 @@ package logger
 import (
 	"context"
 	"fmt"
+	"io"
+	"log/slog"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
 	"github.com/fatih/color"
 )
 
-type LogLevel int
+type LogLevel = slog.Level
 
-const (
-	DEBUG LogLevel = iota
-	INFO
-	WARNING
-	ERROR
-)
-
-type LogEntry struct {
-	Level     LogLevel
-	Message   string
-	Timestamp time.Time
-	Fields    map[string]interface{}
+type Options struct {
+	// Размер буфера канала логов
+	BufferSize int
+	// Количество воркеров для обработки логов
+	WorkerCount int
+	// Режим разработки (красивый вывод в консоль)
+	IsDev bool
+	// Добавлять информацию о файле и строке
+	AddSource bool
+	// Дополнительные атрибуты, которые будут добавлены ко всем логам
+	BaseAttributes []slog.Attr
 }
 
-type AsyncLogger struct {
-	logChan      chan LogEntry
+type Logger struct {
+	logger       *slog.Logger
+	logChan      chan entry
 	wg           sync.WaitGroup
 	file         *os.File
 	ctx          context.Context
 	cancel       context.CancelFunc
-	bufferSize   int
-	workerCount  int
-	isDev        bool
+	opts         Options
 	debugColor   *color.Color
 	infoColor    *color.Color
 	warningColor *color.Color
 	errorColor   *color.Color
 }
 
-func NewAsyncLogger(ctx context.Context, cancel context.CancelFunc, filename string, bufferSize, workerCount int, isDev bool) (*AsyncLogger, error) {
+type entry struct {
+	level  LogLevel
+	msg    string
+	fields []any
+	time   time.Time
+}
+
+type devHandler struct {
+	out    io.Writer
+	opts   *slog.HandlerOptions
+	logger *Logger
+}
+
+const (
+	LevelDebug = slog.LevelDebug
+	LevelInfo  = slog.LevelInfo
+	LevelWarn  = slog.LevelWarn
+	LevelError = slog.LevelError
+)
+
+func DefaultOptions() Options {
+	return Options{
+		BufferSize:  1000,
+		WorkerCount: runtime.NumCPU(),
+		IsDev:       false,
+		AddSource:   true,
+		BaseAttributes: []slog.Attr{
+			slog.String("service", "myapp"),
+			slog.String("environment", "production"),
+		},
+	}
+}
+
+func NewLogger(ctx context.Context, filename string, opts Options) (*Logger, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx, cancel := context.WithCancel(ctx)
+
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		cancel()
 		return nil, fmt.Errorf("failed to open log file: %w", err)
 	}
 
-	logger := &AsyncLogger{
-		logChan:      make(chan LogEntry, bufferSize),
+	logger := &Logger{
+		logChan:      make(chan entry, opts.BufferSize),
 		file:         file,
 		ctx:          ctx,
 		cancel:       cancel,
-		bufferSize:   bufferSize,
-		workerCount:  workerCount,
-		isDev:        isDev,
+		opts:         opts,
 		debugColor:   color.New(color.FgCyan),
 		infoColor:    color.New(color.FgGreen),
 		warningColor: color.New(color.FgYellow),
 		errorColor:   color.New(color.FgRed, color.Bold),
 	}
 
-	for i := 0; i < workerCount; i++ {
+	handler := logger.newMultiHandler(file)
+	logger.logger = slog.New(handler)
+
+	for i := 0; i < opts.WorkerCount; i++ {
 		logger.wg.Add(1)
 		go logger.worker()
 	}
 
 	return logger, nil
 }
+func (l *Logger) newMultiHandler(file io.Writer) slog.Handler {
+	opts := &slog.HandlerOptions{
+		AddSource: l.opts.AddSource,
+		Level:     LevelDebug,
+	}
 
-func (l *AsyncLogger) worker() {
+	var handlers []slog.Handler
+
+	fileHandler := slog.NewJSONHandler(file, opts)
+	handlers = append(handlers, fileHandler)
+
+	if l.opts.IsDev {
+		consoleHandler := l.newDevHandler(os.Stdout, opts)
+		handlers = append(handlers, consoleHandler)
+	}
+
+	return &multiHandler{handlers: handlers}
+}
+
+type multiHandler struct {
+	handlers []slog.Handler
+}
+
+func (h *multiHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	for _, handler := range h.handlers {
+		if handler.Enabled(ctx, level) {
+			return true
+		}
+	}
+	return false
+}
+
+func (h *multiHandler) Handle(ctx context.Context, r slog.Record) error {
+	for _, handler := range h.handlers {
+		if err := handler.Handle(ctx, r); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (h *multiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	handlers := make([]slog.Handler, len(h.handlers))
+	for i, handler := range h.handlers {
+		handlers[i] = handler.WithAttrs(attrs)
+	}
+	return &multiHandler{handlers: handlers}
+}
+
+func (h *multiHandler) WithGroup(name string) slog.Handler {
+	handlers := make([]slog.Handler, len(h.handlers))
+	for i, handler := range h.handlers {
+		handlers[i] = handler.WithGroup(name)
+	}
+	return &multiHandler{handlers: handlers}
+}
+
+func (l *Logger) newDevHandler(w io.Writer, opts *slog.HandlerOptions) slog.Handler {
+	return &devHandler{
+		out:    w,
+		opts:   opts,
+		logger: l,
+	}
+}
+
+func (h *devHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return level >= slog.Level(h.opts.Level.Level())
+}
+
+func (h *devHandler) Handle(ctx context.Context, r slog.Record) error {
+	timeStr := h.logger.debugColor.Sprint(r.Time.Format("15:04:05.000"))
+
+	var levelColor *color.Color
+	switch r.Level {
+	case LevelDebug:
+		levelColor = h.logger.debugColor
+	case LevelInfo:
+		levelColor = h.logger.infoColor
+	case LevelWarn:
+		levelColor = h.logger.warningColor
+	case LevelError:
+		levelColor = h.logger.errorColor
+	}
+
+	levelStr := levelColor.Sprintf("%-5s", r.Level.String())
+
+	var source string
+	if h.opts.AddSource && r.PC != 0 {
+		fs := runtime.CallersFrames([]uintptr{r.PC})
+		f, _ := fs.Next()
+		source = fmt.Sprintf(" %s:%d", f.File, f.Line)
+	}
+
+	var attrs string
+	r.Attrs(func(a slog.Attr) bool {
+		attrs += fmt.Sprintf(" %s=%v", a.Key, a.Value)
+		return true
+	})
+
+	fmt.Fprintf(h.out, "%s %s%s %s%s\n",
+		timeStr,
+		levelStr,
+		source,
+		r.Message,
+		color.HiBlackString(attrs),
+	)
+	return nil
+}
+
+func (h *devHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &devHandler{
+		out:    h.out,
+		opts:   h.opts,
+		logger: h.logger,
+	}
+}
+
+func (h *devHandler) WithGroup(name string) slog.Handler {
+	return &devHandler{
+		out:    h.out,
+		opts:   h.opts,
+		logger: h.logger,
+	}
+}
+
+func (l *Logger) worker() {
 	defer l.wg.Done()
 
 	for {
 		select {
 		case entry := <-l.logChan:
-			l.writeLog(entry)
-		case <-l.ctx.Done():
-			for {
-				select {
-				case entry := <-l.logChan:
-					l.writeLog(entry)
-				default:
-					return
+			r := slog.NewRecord(entry.time, entry.level, entry.msg, 0)
+			for i := 0; i < len(entry.fields); i += 2 {
+				if i+1 < len(entry.fields) {
+					r.Add(entry.fields[i].(string), entry.fields[i+1])
 				}
 			}
+			if err := l.logger.Handler().Handle(l.ctx, r); err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to write log: %v\n", err)
+			}
+		case <-l.ctx.Done():
+			return
 		}
 	}
 }
 
-func (l *AsyncLogger) writeLog(entry LogEntry) {
-	timeFormat := "15:04:05.000"
-	if !l.isDev {
-		timeFormat = time.RFC3339
-	}
-
-	timestamp := entry.Timestamp.Format(timeFormat)
-	levelStr := l.getLevelString(entry.Level)
-
-	logLine := fmt.Sprintf("[%s] [%s] %s", timestamp, levelStr, entry.Message)
-
-	if len(entry.Fields) > 0 {
-		logLine += fmt.Sprintf(" Fields: %v", entry.Fields)
-	}
-	logLine += "\n"
-
-	fmt.Println(logLine)
-
-	if _, err := l.file.WriteString(logLine); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write to log file: %v\n", err)
-	}
-
-	if l.isDev {
-		var coloredOutput *color.Color
-		switch entry.Level {
-		case DEBUG:
-			coloredOutput = l.debugColor
-		case INFO:
-			coloredOutput = l.infoColor
-		case WARNING:
-			coloredOutput = l.warningColor
-		case ERROR:
-			coloredOutput = l.errorColor
-		}
-
-		timeStr := color.New(color.FgHiBlack).Sprint(timestamp)
-		levelStr := coloredOutput.Sprint(levelStr)
-		message := entry.Message
-
-		consoleLog := fmt.Sprintf("%s %-8s %s", timeStr, levelStr, message)
-		if len(entry.Fields) > 0 {
-			consoleLog += color.HiBlackString(" Fields: %v", entry.Fields)
-		}
-		fmt.Println(consoleLog)
-	}
-}
-
-func (l *AsyncLogger) Log(level LogLevel, message string, fields map[string]interface{}) {
-	entry := LogEntry{
-		Level:     level,
-		Message:   message,
-		Timestamp: time.Now(),
-		Fields:    fields,
+func (l *Logger) Log(level LogLevel, msg string, args ...any) {
+	entry := entry{
+		level:  level,
+		msg:    msg,
+		fields: args,
+		time:   time.Now(),
 	}
 
 	select {
 	case l.logChan <- entry:
 	default:
-		fmt.Fprintf(os.Stderr, "Log buffer is full, dropping message: %s\n", message)
+		fmt.Fprintf(os.Stderr, "Log buffer is full, dropping message: %s\n", msg)
 	}
 }
 
-func (l *AsyncLogger) Debug(message string, fields map[string]interface{}) {
-	l.Log(DEBUG, message, fields)
+func (l *Logger) Debug(msg string, args ...any) {
+	l.Log(LevelDebug, msg, args...)
 }
 
-func (l *AsyncLogger) Info(message string, fields map[string]interface{}) {
-	l.Log(INFO, message, fields)
+func (l *Logger) Info(msg string, args ...any) {
+	l.Log(LevelInfo, msg, args...)
 }
 
-func (l *AsyncLogger) Warning(message string, fields map[string]interface{}) {
-	l.Log(WARNING, message, fields)
+func (l *Logger) Warn(msg string, args ...any) {
+	l.Log(LevelWarn, msg, args...)
 }
 
-func (l *AsyncLogger) Error(message string, fields map[string]interface{}) {
-	l.Log(ERROR, message, fields)
+func (l *Logger) Error(msg string, args ...any) {
+	l.Log(LevelError, msg, args...)
 }
 
-func (l *AsyncLogger) Shutdown() error {
+func (l *Logger) With(args ...any) *Logger {
+	newLogger := *l
+	newLogger.logger = l.logger.With(args...)
+	return &newLogger
+}
+
+func (l *Logger) Shutdown(ctx context.Context) error {
 	l.cancel()
-	l.wg.Wait()
-	return l.file.Close()
-}
 
-func (l *AsyncLogger) getLevelString(level LogLevel) string {
-	switch level {
-	case DEBUG:
-		return "DEBUG"
-	case INFO:
-		return "INFO"
-	case WARNING:
-		return "WARN"
-	case ERROR:
-		return "ERROR"
-	default:
-		return "UNKNOWN"
+	done := make(chan struct{})
+	go func() {
+		l.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-ctx.Done():
+		return ctx.Err()
 	}
+
+	return l.file.Close()
 }

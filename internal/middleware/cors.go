@@ -21,7 +21,6 @@ func CORSMiddleware(config CORSConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 
-		// Проверяем, разрешен ли данный origin
 		allowOrigin := ""
 		for _, o := range config.AllowOrigins {
 			if o == "*" || o == origin {
