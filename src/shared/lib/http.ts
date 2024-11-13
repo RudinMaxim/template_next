@@ -31,13 +31,13 @@ const request = async <T>(
   }
 };
 
-export const GET = <T>(url: string, config?: AxiosRequestConfig) => request<T>('GET', url, config);
+export const httpGET = <T>(url: string, config?: AxiosRequestConfig) => request<T>('GET', url, config);
 
-export const POST = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
+export const httpPOST = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
   request<T>('POST', url, { ...config, data });
 
-export const PUT = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
+export const httpPUT = <T, D>(url: string, data?: D, config?: AxiosRequestConfig) =>
   request<T>('PUT', url, { ...config, data });
 
-export const DELETE = <T>(url: string, config?: AxiosRequestConfig) =>
+export const httpDELETE = <T>(url: string, config?: AxiosRequestConfig) =>
   request<T>('DELETE', url, config);

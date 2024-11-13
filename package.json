@@ -14,27 +14,24 @@
     "prepare": "husky install",
     "create:element": "node ./scripts/elements/create.js",
     "lister:element": "node ./scripts/elements/lister.js",
-    "remover:element": "node ./scripts/elements/remover.js",
-    "git-flow": "node ./scripts/gitflow/index.js"
+    "remover:element": "node ./scripts/elements/remover.js" 
   },
   "dependencies": {
-    "@yandex/smart-captcha": "2.6.0",
-    "axios": "^1.7.7",
-    "gsap": "^3.12.5",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18",
-    "styled-components": "^6.1.13",
+    "sass": "^1.79.4",
+    "axios": "^1.7.7",
+    "@yandex/smart-captcha": "2.6.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/jest": "^29.4.0",
-    "@types/node": "^20",
+    "@types/node": "^20.17.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/styled-components": "^5.1.34",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
     "eslint": "^8.57.1",
@@ -48,7 +45,6 @@
     "jest-environment-jsdom": "^29.4.3",
     "lint-staged": "^13.1.2",
     "prettier": "^3.3.3",
-    "sass": "^1.79.4",
     "stylelint": "^16.9.0",
     "stylelint-config-prettier-scss": "^1.0.0",
     "stylelint-config-standard-scss": "^13.1.0",
@@ -56,6 +52,6 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
-    "*.css": "stylelint --fix"
+    "*.scss": "stylelint --fix"
   }
 }

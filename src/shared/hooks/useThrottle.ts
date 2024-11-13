@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState, useRef } from 'react';
 
 export const useThrottle = <T>(value: T, delay = 500) => {

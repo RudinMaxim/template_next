@@ -1,3 +1,5 @@
 {
-  "hello": "hello"
+  "title": "Главная страница, чтото изменилось в файле",
+  "description": "Описание <br> многострочный текст",
+  "content": "<p> <strong>HTML</strong><br> контент </p>"
 }

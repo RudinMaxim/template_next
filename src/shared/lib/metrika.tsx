@@ -1,7 +1,7 @@
 import Script from 'next/script';
 
 import { METRIKA_CONFIG } from '@/shared/config';
-import { isDevelopment, debugLog, isLocalhost } from '@/shared/lib/utils';
+import { envManager } from '@/shared/lib';
 
 type YandexMetricsGoalType = 'FORM_SUBMIT' | 'PHONE_CALL' | 'SOCIAL_CLICK';
 
@@ -32,16 +32,16 @@ class YandexMetrics {
   private readonly isMetricsEnabled: boolean;
 
   private constructor() {
-    const metricsId = process.env.YANDEX_METRICA;
+    const metricsId = process.env.YANDEX_METRICA_COUNTER_ID;
     if (!metricsId) {
-      throw new Error('YANDEX_METRICA environment variable is not defined');
+      throw new Error('YANDEX_METRICA_COUNTER_ID environment variable is not defined');
     }
 
     this.counterId = Number(metricsId);
     this.isMetricsEnabled = this.checkIsMetricsEnabled();
 
-    if (isDevelopment()) {
-      debugLog('Yandex Metrics', 'Init', {
+    if (envManager.isDevelopment()) {
+      envManager.debugLog('Yandex Metrics', 'Init', {
         enabled: this.isMetricsEnabled,
       });
     }
@@ -59,7 +59,7 @@ class YandexMetrics {
   }
 
   private checkIsMetricsEnabled(): boolean {
-    return !((isDevelopment() && isLocalhost) || process.env.DISABLE_YANDEX_METRIKA === 'true');
+    return !((envManager.isDevelopment() && envManager.isLocalhost()) || process.env.DISABLE_YANDEX_METRIKA === 'true');
   }
 
   private isAvailable(): boolean {
@@ -75,10 +75,10 @@ class YandexMetrics {
   }
 
   public reachGoal(goal: YandexMetricsGoalType, params?: YandexMetricsGoalParams): void {
-    debugLog('Yandex Metrika', 'Goal', { goal, params });
+    envManager.debugLog('Yandex Metrika', 'Goal', { goal, params });
 
     if (!this.isAvailable()) {
-      if (isDevelopment()) {
+      if (envManager.isDevelopment()) {
         console.warn('Yandex Metrika is disabled or not available');
       }
       return;
@@ -92,10 +92,10 @@ class YandexMetrics {
   }
 
   public sendEvent(options: YandexMetrikaEventOptions): void {
-    debugLog('Yandex Metrika', 'Event', options);
+    envManager.debugLog('Yandex Metrika', 'Event', options);
 
     if (!this.isAvailable()) {
-      if (isDevelopment()) {
+      if (envManager.isDevelopment()) {
         console.warn('Yandex Metrika is disabled or not available');
       }
       return;
