@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import '../style/common.scss';
+import '../style/main.scss';
 
 const geistSans = localFont({
   src: '../../shared/assets/fonts/Roboto-Black.ttf',

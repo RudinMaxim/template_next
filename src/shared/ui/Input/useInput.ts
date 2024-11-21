@@ -1,8 +1,6 @@
-interface IInputHookResult {
-  // Определите возвращаемые значения хука здесь
-}
 
-export function useInput(): IInputHookResult {
+
+export function useInput() {
   // Здесь логика компонента
   return {
     // Верните необходимые данные и функции

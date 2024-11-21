@@ -1,5 +1,6 @@
 import { useContent } from '@/shared/hooks';
 import { envManager } from '@/shared/lib';
+import { Input } from '@/shared/ui';
 
 import { PageContent } from '../types/page.types';
 
@@ -15,6 +16,8 @@ export default function Home() {
       <div dangerouslySetInnerHTML={{ __html: content.content }} />
 
       {JSON.stringify(envManager)}
+
+      <Input/>
     </main>
   );
 }

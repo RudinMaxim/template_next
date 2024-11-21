@@ -1,0 +1,31 @@
+$breakpoints: (
+    xs: 375,
+    md: 768,
+    xl: 1280,
+    xxl: 1440,
+    fhd: 1920,
+    qhd: 2560,
+    uhd: 3840,
+);
+
+$xs: map-get($breakpoints, xs);
+$md: map-get($breakpoints, md);
+$xl: map-get($breakpoints, xl);
+$xxl: map-get($breakpoints, xxl);
+$fhd: map-get($breakpoints, fhd);
+$qhd: map-get($breakpoints, qhd);
+$uhd: map-get($breakpoints, uhd);
+
+// Z-индексы
+$increase-z: 10;
+$decrease-z: -10;
+$z-index-header: 100;
+$z-index-modal: $z-index-header + $increase-z;
+$z-index-cookies: $z-index-modal + $increase-z;
+$z-index-transition: $z-index-cookies + $increase-z;
+$z-index-preloader: $z-index-transition + $increase-z;
+
+// Transitions
+$base-transition-time: 0.3s;
+$base-transition-timing-function: ease-in-out;
+$base-transition: $base-transition-time $base-transition-timing-function;

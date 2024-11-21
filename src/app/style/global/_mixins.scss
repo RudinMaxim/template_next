@@ -1,47 +1,34 @@
 @use 'sass:map';
-// @use 'variables' as *;
+@use 'variables';
 
 // ============================
 // Миксин breakpoint
 // Используется для создания медиазапросов.
-// - $from: минимальная ширина экрана (брейкпоинт)
-// - $to: максимальная ширина экрана (брейкпоинт)
-// Пример использования:
-// @include breakpoint(sm) { /* стили */ }
-// @include breakpoint(null, md) { /* стили */ }
-// @include breakpoint(sm, lg) { /* стили */ }
 @mixin breakpoint($from: null, $to: null) {
-  // Остальная логика миксина остается прежней
-  @if $from != null and $to == null {
+  @if $from and not $to {
     @media (min-width: #{map-get($breakpoints, $from)}px) {
       @content;
     }
-  } @else if $from == null and $to != null {
+  } @else if not $from and $to {
     @media (max-width: #{map-get($breakpoints, $to)}px) {
       @content;
     }
-  } @else if $from != null and $to != null {
+  } @else if $from and $to {
     @media (min-width: #{map-get($breakpoints, $from)}px) and (max-width: #{map-get($breakpoints, $to)}px) {
       @content;
     }
-  }
+  }  
 }
-
-// ============================
 // Миксин responsive
 // Используется для задания значений свойства для разных брейкпоинтов.
-// - $property: CSS-свойство (например, margin, padding)
-// - $values: значения для каждого брейкпоинта
-// Пример использования:
-// @include responsiveProperty(margin, 10px, 20px, 30px, null, 50px);
 @mixin responsiveProperty($property, $values...) {
-  $breaks: (xss, xs, md, lg, xl, xxl, fhd, qhd, uhd);
+  $breaks: (xs, md, xl, xxl, fhd, qhd, uhd);
 
   @for $i from 1 through length($values) {
     $break: nth($breaks, $i);
     $value: nth($values, $i);
 
-    @if $value != null {
+    @if $value {
       @include breakpoint($break) {
         #{$property}: $value;
       }
@@ -51,24 +38,19 @@
 
 // ============================
 // Миксин spacing
-// Используется для задания значений для отступов (top, right, bottom, left).
-// - $property: CSS-свойство (например, margin, padding)
-// - $values: значения для каждой стороны (top, right, bottom, left)
-// Пример использования:
-// @include spacing(margin, 10px, 15px, 20px, 25px);
+// Используется для задания значений для отступов.
 @mixin spacing($property, $values...) {
   $properties: ('top', 'right', 'bottom', 'left');
 
   @for $i from 1 through length($values) {
     $value: nth($values, $i);
-    @if $value != null {
+    @if $value {
       #{$property}-#{nth($properties, $i)}: $value;
     }
   }
 }
 
 // ============================
-
 @mixin size($property, $value, $base: 16px) {
   @if (unitless($value)) {
     #{$property}: rem($value, $base);
@@ -84,19 +66,11 @@
 @mixin responsive-font-size($min-size, $max-size, $min-screen: 375px, $max-screen: 1920px) {
   font-size: $min-size;
 
-  @media (min-width: $min-screen) {
-    font-size: calc(
-      #{$min-size} + (#{$max-size} - #{$min-size}) * (100vw - #{$min-screen}) / (#{$max-screen} - #{$min-screen})
-    );
-  }
-
-  @media (min-width: $max-screen) {
-    font-size: $max-size;
+  @media (min-width: #{$min-screen}) {
+    font-size: calc(#{$min-size} + (#{$max-size} - #{$min-size}) * (100vw - #{$min-screen}) / (#{$max-screen} - #{$min-screen}));
   }
 }
-
 // ============================
-
 // Миксин для hover с проверкой на поддержку
 @mixin hover {
   @media (hover: hover) {

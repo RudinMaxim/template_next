@@ -20,7 +20,7 @@ type EnvValue = string | number | boolean | null;
 export type EnvSchema = z.ZodObject<Record<string, z.ZodType<EnvValue>>>;
 
 export class EnvironmentManager<T extends EnvSchema> {
-  private static instance: EnvironmentManager<any>;
+  private static instance: EnvironmentManager<EnvSchema>;
   private envCache: Map<string, EnvValue> = new Map();
   private schema?: T;
   private validationErrors: string[] = [];
@@ -37,14 +37,14 @@ export class EnvironmentManager<T extends EnvSchema> {
     config?: Record<string, EnvValue>
   ): EnvironmentManager<S> {
     if (!EnvironmentManager.instance) {
-      EnvironmentManager.instance = new EnvironmentManager(config);
+      EnvironmentManager.instance = new EnvironmentManager<S>(config);
     }
 
     if (schema) {
-      EnvironmentManager.instance.setSchema(schema);
+      (EnvironmentManager.instance as EnvironmentManager<S>).setSchema(schema);
     }
 
-    return EnvironmentManager.instance;
+    return EnvironmentManager.instance as EnvironmentManager<S>;
   }
 
   /**

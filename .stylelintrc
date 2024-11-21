@@ -25,5 +25,8 @@
         "ignorePseudoClasses": ["global"]
       }
     ]
-  }
+  },
+  "ignoreFiles": [
+    "src/app/style/global/**/*.scss"
+  ]
 }
