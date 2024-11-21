@@ -1,1 +1,1 @@
-export * from './page.types'
+export * from './page.types';

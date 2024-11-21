@@ -400,7 +400,7 @@ async function promptUser() {
     } while (!(await validateComponentName(name)));
 
     if (type === 'ui' || type === 'widget') {
-      const useHook = await askQuestion('Нужен ли хук для компонента?', ['Да', 'Нет']) === 'Да';
+      const useHook = (await askQuestion('Нужен ли хук для компонента?', ['Да', 'Нет'])) === 'Да';
       await typeMap[type].generator(type, name, useHook);
     } else {
       await typeMap[type].generator(name);

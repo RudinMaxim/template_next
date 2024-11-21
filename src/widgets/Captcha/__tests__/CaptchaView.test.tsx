@@ -5,7 +5,7 @@ import { useCaptcha } from '../useCaptcha';
 describe('useCaptcha', () => {
   it('should initialize with default values', () => {
     const { result } = renderHook(() => useCaptcha());
-    
+
     expect(result.current.token).toBe('');
     expect(result.current.status).toBe('idle');
     expect(result.current.isVisible).toBe(false);
@@ -51,4 +51,3 @@ describe('useCaptcha', () => {
     expect(onVisibilityChange).toHaveBeenCalledWith(true);
   });
 });
-

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-
 // Константы
 const DEFAULT_ENVIRONMENTS = {
   DEVELOPMENT: 'development',

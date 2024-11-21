@@ -13,7 +13,6 @@ export interface CaptchaCallbacks {
   onVisibilityChange?: (visible: boolean) => void;
 }
 
-
 export const useCaptcha = (props: CaptchaCallbacks = {}) => {
   const [state, setState] = useState<CaptchaState>({
     token: '',

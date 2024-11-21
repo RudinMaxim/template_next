@@ -29,4 +29,3 @@ describe('CaptchaWidget', () => {
     expect(element).toBeInTheDocument();
   });
 });
-

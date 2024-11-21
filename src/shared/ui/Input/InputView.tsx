@@ -7,7 +7,6 @@ interface IInputProps {
 }
 
 export function InputView({}: IInputProps) {
-
   return (
     <div className={styles.input}>
       <h2>Input</h2>

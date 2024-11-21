@@ -1,4 +1,4 @@
-@use "sass:map";
+@use 'sass:map';
 // @use 'variables' as *;
 
 // ============================
@@ -11,7 +11,6 @@
 // @include breakpoint(null, md) { /* стили */ }
 // @include breakpoint(sm, lg) { /* стили */ }
 @mixin breakpoint($from: null, $to: null) {
-
   // Остальная логика миксина остается прежней
   @if $from != null and $to == null {
     @media (min-width: #{map-get($breakpoints, $from)}px) {
@@ -37,11 +36,11 @@
 // @include responsiveProperty(margin, 10px, 20px, 30px, null, 50px);
 @mixin responsiveProperty($property, $values...) {
   $breaks: (xss, xs, md, lg, xl, xxl, fhd, qhd, uhd);
-  
+
   @for $i from 1 through length($values) {
     $break: nth($breaks, $i);
     $value: nth($values, $i);
-    
+
     @if $value != null {
       @include breakpoint($break) {
         #{$property}: $value;

@@ -59,7 +59,10 @@ class YandexMetrics {
   }
 
   private checkIsMetricsEnabled(): boolean {
-    return !((envManager.isDevelopment() && envManager.isLocalhost()) || process.env.DISABLE_YANDEX_METRIKA === 'true');
+    return !(
+      (envManager.isDevelopment() && envManager.isLocalhost()) ||
+      process.env.DISABLE_YANDEX_METRIKA === 'true'
+    );
   }
 
   private isAvailable(): boolean {
