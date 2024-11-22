@@ -77,7 +77,9 @@
 // ============================
 // Миксин для hover с проверкой на поддержку
 @mixin hover {
+
   @media (hover: hover) {
+    
     &:hover {
       @content;
     }
