@@ -1,5 +1,3 @@
-
-
 export function useInput() {
   // Здесь логика компонента
   return {

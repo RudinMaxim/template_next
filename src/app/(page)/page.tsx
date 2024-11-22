@@ -17,7 +17,7 @@ export default function Home() {
 
       {JSON.stringify(envManager)}
 
-      <Input/>
+      <Input />
     </main>
   );
 }

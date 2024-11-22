@@ -17,8 +17,9 @@
     @media (min-width: #{map-get($breakpoints, $from)}px) and (max-width: #{map-get($breakpoints, $to)}px) {
       @content;
     }
-  }  
+  }
 }
+
 // Миксин responsive
 // Используется для задания значений свойства для разных брейкпоинтов.
 @mixin responsiveProperty($property, $values...) {
@@ -52,7 +53,7 @@
 
 // ============================
 @mixin size($property, $value, $base: 16px) {
-  @if (unitless($value)) {
+  @if unitless($value) {
     #{$property}: rem($value, $base);
   } @else {
     #{$property}: $value;
@@ -67,9 +68,12 @@
   font-size: $min-size;
 
   @media (min-width: #{$min-screen}) {
-    font-size: calc(#{$min-size} + (#{$max-size} - #{$min-size}) * (100vw - #{$min-screen}) / (#{$max-screen} - #{$min-screen}));
+    font-size: calc(
+      #{$min-size} + (#{$max-size} - #{$min-size}) * (100vw - #{$min-screen}) / (#{$max-screen} - #{$min-screen})
+    );
   }
 }
+
 // ============================
 // Миксин для hover с проверкой на поддержку
 @mixin hover {
@@ -82,7 +86,7 @@
 
 // Миксин для Safari
 @mixin safari {
-  @media not all and (min-resolution: 0.001dpcm) {
+  @media not all and (resolution >= 0.001dpcm) {
     @supports (-webkit-appearance: none) {
       @content;
     }

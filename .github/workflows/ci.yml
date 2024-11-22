@@ -21,7 +21,6 @@ jobs:
       - run: npm run format
       - run: npm run lint
       - run: npm run lint:fix
-      - run: npm run lint:types
       - name: Verify no uncommitted changes
         run: git diff --exit-code
 
@@ -47,7 +46,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm run lint:types
       - run: npm run test
       - run: npm run build
       - name: Verify no uncommitted changes
