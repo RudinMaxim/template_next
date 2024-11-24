@@ -1,23 +1,10 @@
-import { useContent } from '@/shared/hooks';
-import { envManager } from '@/shared/lib';
-import { Input } from '@/shared/ui';
-
-import { PageContent } from '../types/page.types';
+'use client';
+import { TextInput } from '@/shared/ui';
 
 export default function Home() {
-  const content = useContent<PageContent>('common', { allowHtml: true });
-
-  console.log(envManager.get('windir'));
-
   return (
     <main>
-      <h1>{content.title}</h1>
-      <p>{content.description}</p>
-      <div dangerouslySetInnerHTML={{ __html: content.content }} />
-
-      {JSON.stringify(envManager)}
-
-      <Input />
+      <TextInput/>
     </main>
   );
 }
