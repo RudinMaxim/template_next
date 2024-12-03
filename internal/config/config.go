@@ -12,7 +12,8 @@ import (
 
 type Config struct {
 	Node     NodeConfig     `mapstructure:"node"`
-	API      APIConfig      `mapstructure:"api"`
+	API      HttpConfig     `mapstructure:"api"`
+	GRPC     GRPCConfig     `mapstructure:"grpc"`
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	Redis    RedisConfig    `mapstructure:"redis"`
 	Logger   LoggerConfig   `mapstructure:"logger"`
@@ -22,7 +23,12 @@ type NodeConfig struct {
 	Mode string `mapstructure:"mode"`
 }
 
-type APIConfig struct {
+type HttpConfig struct {
+	Port string `mapstructure:"port"`
+	URL  string `mapstructure:"url"`
+}
+
+type GRPCConfig struct {
 	Port string `mapstructure:"port"`
 	URL  string `mapstructure:"url"`
 }
@@ -90,9 +96,13 @@ func (cl *ConfigLoader) initializeOptions() {
 		// Node options
 		{Key: "node.mode", EnvKey: "NODE_MODE", DefaultValue: "development"},
 
-		// API options
-		{Key: "api.port", EnvKey: "API_PORT", DefaultValue: "8080"},
-		{Key: "api.url", EnvKey: "API_URL", DefaultValue: "http://localhost"},
+		// Http options
+		{Key: "http.port", EnvKey: "API_PORT", DefaultValue: "8080"},
+		{Key: "http.url", EnvKey: "API_URL", DefaultValue: "localhost"},
+
+		// GRPC options
+		{Key: "grpc.port", EnvKey: "GRPC_PORT", DefaultValue: "50051"},
+		{Key: "grpc.url", EnvKey: "GRPC_URL", DefaultValue: "localhost"},
 
 		// Logger
 		{Key: "logger.dir", EnvKey: "", DefaultValue: "logs"},
@@ -102,25 +112,26 @@ func (cl *ConfigLoader) initializeOptions() {
 		{Key: "postgres.host", EnvKey: "POSTGRES_HOST", DefaultValue: "localhost"},
 		{Key: "postgres.port", EnvKey: "POSTGRES_PORT", DefaultValue: "5432"},
 		{Key: "postgres.user", EnvKey: "POSTGRES_USER", DefaultValue: "postgres"},
-		{Key: "postgres.password", EnvKey: "POSTGRES_PASSWORD", DefaultValue: ""},
-		{Key: "postgres.dbname", EnvKey: "POSTGRES_NAME", DefaultValue: "beautysync"},
-		{Key: "postgres.max_idle_conns", EnvKey: "", DefaultValue: 10},
-		{Key: "postgres.max_open_conns", EnvKey: "", DefaultValue: 100},
-		{Key: "postgres.conn_max_lifetime", EnvKey: "", DefaultValue: 3600},
-		{Key: "postgres.sslmode", EnvKey: "", DefaultValue: "disable"},
+		{Key: "postgres.password", EnvKey: "POSTGRES_PASSWORD", DefaultValue: "postgres"},
+		{Key: "postgres.dbname", EnvKey: "POSTGRES_DBNAME", DefaultValue: "myapp"},
+		{Key: "postgres.max_idle_conns", EnvKey: "POSTGRES_MAX_IDLE_CONNS", DefaultValue: 10},
+		{Key: "postgres.max_open_conns", EnvKey: "POSTGRES_MAX_OPEN_CONNS", DefaultValue: 100},
+		{Key: "postgres.conn_max_lifetime", EnvKey: "POSTGRES_CONN_MAX_LIFETIME", DefaultValue: time.Hour},
+		{Key: "postgres.conn_max_idle_time", EnvKey: "POSTGRES_CONN_MAX_IDLE_TIME", DefaultValue: time.Minute * 30},
+		{Key: "postgres.retry_attempts", EnvKey: "POSTGRES_RETRY_ATTEMPTS", DefaultValue: 3},
+		{Key: "postgres.retry_delay", EnvKey: "POSTGRES_RETRY_DELAY", DefaultValue: time.Second * 5},
+		{Key: "postgres.sslmode", EnvKey: "POSTGRES_SSLMODE", DefaultValue: "disable"},
+		{Key: "postgres.debug", EnvKey: "POSTGRES_DEBUG", DefaultValue: false},
 
 		// Redis options
 		{Key: "redis.host", EnvKey: "REDIS_HOST", DefaultValue: "localhost"},
 		{Key: "redis.port", EnvKey: "REDIS_PORT", DefaultValue: "6379"},
 		{Key: "redis.password", EnvKey: "REDIS_PASSWORD", DefaultValue: ""},
-		{Key: "redis.db", EnvKey: "", DefaultValue: 0},
-		{Key: "redis.pool_size", EnvKey: "", DefaultValue: 10},
-		{Key: "redis.min_idle_conns", EnvKey: "", DefaultValue: 5},
-		{Key: "redis.default_ttl", EnvKey: "", DefaultValue: 300},
-		{Key: "redis.category_ttl", EnvKey: "", DefaultValue: 3600},
-		{Key: "redis.service_ttl", EnvKey: "", DefaultValue: 1800},
-		{Key: "redis.tag_ttl", EnvKey: "", DefaultValue: 3600},
-		{Key: "redis.enabled", EnvKey: "", DefaultValue: true},
+		{Key: "redis.db", EnvKey: "REDIS_DB", DefaultValue: 0},
+		{Key: "redis.pool_size", EnvKey: "REDIS_POOL_SIZE", DefaultValue: 10},
+		{Key: "redis.min_idle_conns", EnvKey: "REDIS_MIN_IDLE_CONNS", DefaultValue: 5},
+		{Key: "redis.default_ttl", EnvKey: "REDIS_DEFAULT_TTL", DefaultValue: 3600},
+		{Key: "redis.enabled", EnvKey: "REDIS_ENABLED", DefaultValue: true},
 	}
 }
 

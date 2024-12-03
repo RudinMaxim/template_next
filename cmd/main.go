@@ -19,7 +19,7 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	if err := application.Start(); err != nil {
+	if err := application.Run(); err != nil {
 		log.Fatalf("Failed to start application: %v", err)
 	}
 

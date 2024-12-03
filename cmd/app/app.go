@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/RudinMaxim/template/internal/config"
+	"github.com/RudinMaxim/template/internal/domain/order/delivery/http"
 	"github.com/RudinMaxim/template/internal/infrastructure/database/postgres"
 	"github.com/RudinMaxim/template/internal/infrastructure/database/redis"
+	"github.com/RudinMaxim/template/internal/infrastructure/servers"
 	"github.com/RudinMaxim/template/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -164,11 +166,24 @@ func (a *App) initRedis() error {
 	return nil
 }
 
-func (a *App) Start() error {
-	serverAddr := ":" + a.config.API.Port
-	a.logger.Info(fmt.Sprintf("Starting server on %s", serverAddr))
+func (a *App) Run() error {
+	manager := servers.NewManager()
 
-	return a.router.Run(serverAddr)
+	ginEngine := gin.Default()
+
+	http.RegisterRoutes(ginEngine)
+
+	httpServer := servers.NewHTTPServer(a.config.API.Port, ginEngine)
+
+	manager.AddServer(httpServer)
+	// (Дополнительно) Добавляем gRPC и WebSocket, если нужно:
+	// grpcServer := servers.NewGRPCServer(":9090")
+	// wsServer := servers.NewWSServer(":7070", websocketHandler)
+	// manager.AddServer(grpcServer)
+	// manager.AddServer(wsServer)
+
+	// Запуск всех серверов
+	return manager.StartAll()
 }
 
 func (a *App) Shutdown() error {

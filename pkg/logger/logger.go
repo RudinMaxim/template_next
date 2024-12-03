@@ -56,7 +56,7 @@ func DefaultOptions() config.LoggerConfig {
 		WorkerCount: 1,
 		IsDev:       false,
 		AddSource:   true,
-		Dir:         "./loge",
+		Dir:         "./log",
 		FileName:    "app.log",
 		BaseAttributes: []slog.Attr{
 			slog.String("service", "myapp"),
