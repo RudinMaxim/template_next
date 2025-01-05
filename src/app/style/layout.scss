@@ -1,0 +1,129 @@
+@use 'members' as *;
+
+@each $fileName, $weight in $fontFilesManrope {
+  @font-face {
+    font-family: $fontManropeName;
+    src:
+      url('/fonts/#{$fileName}.woff2') format('woff2'),
+      url('/fonts/#{$fileName}.ttf') format('truetype');
+    font-weight: $weight;
+    font-style: normal;
+    font-display: swap;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: $fontManropeFamily;
+  font-weight: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  position: relative;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+  color: var(--black);
+  -webkit-tap-highlight-color: transparent;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+main {
+  flex: 1;
+  position: relative;
+  width: 100%;
+}
+
+//main,
+//header,
+//footer {
+//    @include media-breakpoint-up(max) {
+//        width: 1920px;
+//    }
+//}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: inherit;
+  padding: 0;
+  margin: 0;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+ul,
+li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+input {
+  border: none;
+  background: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  -webkit-appearance: none;
+  color: inherit;
+
+  &:hover,
+  &:active,
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    letter-spacing: inherit;
+  }
+}
+
+button {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+
+  &:hover,
+  &:active,
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    border: 1px solid var(--black);
+  }
+}
+
+b {
+  font-weight: 600;
+}

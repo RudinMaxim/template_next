@@ -1,0 +1,111 @@
+@use '_mixins' as *;
+@use '_fonts' as *;
+@use '_variables' as *;
+
+@mixin h4 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(22, 26, 32, 36, 48);
+}
+
+@mixin t1 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 120%;
+
+    @include rem-adaptive-font(18, 20, 22, 24, 32);
+}
+
+@mixin t2-body {
+    font-family: $fontManropeFamily;
+    font-weight: 400;
+    line-height: 140%;
+
+    @include rem-adaptive-font(16, 16, 16, 16, 18);
+}
+
+.h1 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 90%;
+
+    @include rem-adaptive-font(36, 52, 74, 80, 106);
+}
+
+.h2 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 90%;
+
+    @include rem-adaptive-font(30, 50, 54, 60, 80);
+}
+
+.h3 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(26, 36, 38, 42, 56);
+}
+
+.h4 {
+    @include h4;
+}
+
+.t1 {
+    @include t1;
+}
+
+.t2-body {
+    @include t2-body;
+}
+
+.t2-card {
+    font-family: $fontManropeFamily;
+    font-weight: 400;
+    line-height: 140%;
+
+    @include rem-adaptive-font(14, 14, 14, 16, 18);
+}
+
+.t3 {
+    font-family: $fontManropeFamily;
+    font-weight: 400;
+    line-height: 130%;
+
+    @include rem-adaptive-font(12, 12, 12, 14, 16);
+}
+
+.ui-1 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(18, 20, 22, 24, 32);
+}
+
+.ui-2 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(14, 14, 14, 16, 18);
+}
+
+.ui-3 {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(14, 14, 14, 14, 16);
+}
+
+.num {
+    font-family: $fontManropeFamily;
+    font-weight: 500;
+    line-height: 100%;
+
+    @include rem-adaptive-font(48, 80, 100, 120, 160);
+}

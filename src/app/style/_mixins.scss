@@ -1,0 +1,280 @@
+@use 'variables' as *;
+@use 'functions' as *;
+@use 'fonts' as *;
+
+@mixin media-breakpoint-up($name) {
+    @media (min-width: #{map-get($breakpointsMedia, $name)}px) {
+        @content;
+    }
+}
+
+@mixin media-breakpoint-down($name) {
+    @media (max-width: #{map-get($breakpointsMedia, $name) - 1}px) {
+        @content;
+    }
+}
+
+@mixin media-breakpoint-range($from, $to) {
+    @include media-breakpoint-up($from) {
+        @include media-breakpoint-down($to) {
+            @content;
+        }
+    }
+}
+
+@mixin hover() {
+    @media (hover: hover) {
+        &:hover {
+            @content;
+        }
+    }
+}
+
+@mixin hoverParent($parentSelector) {
+    @media (hover: hover) {
+        #{$parentSelector}:hover & {
+            @content;
+        }
+    }
+}
+
+@mixin rem-fluid($property, $mobile, $tablet-768, $desktop-1280, $desktop-1440, $desktop-1920) {
+    $mobile-rem: rem($mobile);
+    $tablet-768-rem: rem($tablet-768);
+    $desktop-1280-rem: rem($desktop-1280);
+    $desktop-1440-rem: rem($desktop-1440);
+    $desktop-1920-rem: rem($desktop-1920);
+    #{$property}: $mobile-rem;
+
+    @include media-breakpoint-up(xs) {
+        #{$property}: calc(
+            #{$mobile-rem} + (#{strip-unit($tablet-768-rem)} - #{strip-unit($mobile-rem)}) * ((100vw - #{rem(375)}) /
+                        (768 - 375))
+        );
+
+        @media (height <= 500px) {
+            #{$property}: $mobile-rem;
+        }
+    }
+
+    @include media-breakpoint-up(md) {
+        #{$property}: calc(
+            #{$tablet-768-rem} + (#{strip-unit($desktop-1280-rem)} - #{strip-unit($tablet-768-rem)}) * ((
+                            100vw - #{rem(768)}
+                        ) / (1280 - 768))
+        );
+
+        @media (height <= 500px) {
+            #{$property}: calc(
+                #{$mobile-rem} + ((#{strip-unit($desktop-1920-rem)} * 0.7) - #{strip-unit($mobile-rem)}) * ((
+                                100vw - #{rem(768)}
+                            ) / (1280 - 768))
+            );
+        }
+    }
+
+    @include media-breakpoint-up(xl) {
+        #{$property}: calc(
+            #{$desktop-1280-rem} + (#{strip-unit($desktop-1920-rem)} - #{strip-unit($desktop-1280-rem)}) * ((
+                            100vw - #{rem(1280)}
+                        ) / (1920 - 1280))
+        );
+
+        @media (height <= 500px) {
+            #{$property}: calc(
+                #{$mobile-rem} + ((#{strip-unit($desktop-1920-rem)} * 0.7) - #{strip-unit($mobile-rem)}) * ((
+                                100vw - #{rem(768)}
+                            ) / (1920 - 768))
+            );
+        }
+    }
+
+    @include media-breakpoint-up(xxl) {
+        #{$property}: calc(
+            #{$desktop-1440-rem} + (#{strip-unit($desktop-1920-rem)} - #{strip-unit($desktop-1440-rem)}) * ((
+                            100vw - #{rem(1440)}
+                        ) / (1920 - 1440))
+        );
+
+        @media (height <= 500px) {
+            #{$property}: calc(
+                #{$mobile-rem} + ((#{strip-unit($desktop-1920-rem)} * 0.7) - #{strip-unit($mobile-rem)}) * ((
+                                100vw - #{rem(768)}
+                            ) / (1920 - 768))
+            );
+        }
+    }
+
+    @include media-breakpoint-up(fhd) {
+        #{$property}: vw($desktop-1920);
+    }
+}
+
+@mixin rem-adaptive-font($mobile, $tablet-768, $desktop-1280, $desktop-1440, $desktop-1920) {
+    @include rem-fluid(font-size, $mobile, $tablet-768, $desktop-1280, $desktop-1440, $desktop-1920);
+}
+
+/* Адаптивные значения свойств для всех допустимых разрешений в единицах vw/vh, с возможностью ограничить минимальным
+ и максимальным значением, если передать в качестве значения список из 3х элементов в порядке параметров css-функции clamp. */
+@mixin smooth-offset($property, $mobile, $tablet-md, $desktop-xl, $desktop-xxl, $desktop-fhd, $vh: false) {
+    @if $mobile {
+        @if length($mobile) == 3 {
+            $min: nth($mobile, 1);
+            $value: nth($mobile, 2);
+            $max: nth($mobile, 3);
+            #{$property}: clamp(#{$min}px, if($vh, vh($value, xs), vw($value, xs)), #{$max}px);
+        } @else {
+            #{$property}: if($vh, vh($mobile, xs), vw($mobile, xs));
+        }
+    }
+
+    @if $tablet-md {
+        @include media-breakpoint-up(md) {
+            @if length($tablet-md) == 3 {
+                $min: nth($tablet-md, 1);
+                $value: nth($tablet-md, 2);
+                $max: nth($tablet-md, 3);
+                #{$property}: clamp(#{$min}px, if($vh, vh($value, md), vw($value, md)), #{$max}px);
+            } @else {
+                #{$property}: if($vh, vh($tablet-md, md), vw($tablet-md, md));
+            }
+        }
+    }
+
+    @if $desktop-xl {
+        @include media-breakpoint-up(xl) {
+            @if length($desktop-xl) == 3 {
+                $min: nth($desktop-xl, 1);
+                $value: nth($desktop-xl, 2);
+                $max: nth($desktop-xl, 3);
+                #{$property}: clamp(#{$min}px, if($vh, vh($value, xl), vw($value, xl)), #{$max}px);
+            } @else {
+                #{$property}: if($vh, vh($desktop-xl, xl), vw($desktop-xl, xl));
+            }
+        }
+    }
+
+    @if $desktop-xxl {
+        @include media-breakpoint-up(xxl) {
+            @if length($desktop-xxl) == 3 {
+                $min: nth($desktop-xxl, 1);
+                $value: nth($desktop-xxl, 2);
+                $max: nth($desktop-xxl, 3);
+                #{$property}: clamp(#{$min}px, if($vh, vh($value, xxl), vw($value, xxl)), #{$max}px);
+            } @else {
+                #{$property}: if($vh, vh($desktop-xxl, xxl), vw($desktop-xxl, xxl));
+            }
+        }
+    }
+
+    @if $desktop-fhd {
+        @include media-breakpoint-up(fhd) {
+            @if length($desktop-fhd) == 3 {
+                $min: nth($desktop-fhd, 1);
+                $value: nth($desktop-fhd, 2);
+                $max: nth($desktop-fhd, 3);
+                #{$property}: clamp(#{$min}px, if($vh, vh($value), vw($value)), #{$max}px);
+            } @else {
+                #{$property}: if($vh, vh($desktop-fhd), vw($desktop-fhd));
+            }
+        }
+    }
+}
+
+@mixin adaptiveHardValues($property, $mobile, $tablet-768, $desktop-1280, $desktop-1440, $desktop-1920, $rem: false) {
+    @if $mobile {
+        @if $rem {
+            #{$property}: rem($mobile);
+        } @else {
+            #{$property}: #{$mobile}px;
+        }
+    }
+
+    @if $tablet-768 {
+        @include media-breakpoint-up(md) {
+            @if $rem {
+                #{$property}: rem($tablet-768);
+            } @else {
+                #{$property}: #{$tablet-768}px;
+            }
+        }
+    }
+
+    @if $desktop-1280 {
+        @include media-breakpoint-up(xl) {
+            @if $rem {
+                #{$property}: rem($desktop-1280);
+            } @else {
+                #{$property}: #{$desktop-1280}px;
+            }
+        }
+    }
+
+    @if $desktop-1440 {
+        @include media-breakpoint-up(xxl) {
+            @if $rem {
+                #{$property}: rem($desktop-1440);
+            } @else {
+                #{$property}: #{$desktop-1440}px;
+            }
+        }
+    }
+
+    @if $desktop-1920 {
+        @include media-breakpoint-up(fhd) {
+            @if $rem {
+                #{$property}: rem($desktop-1920);
+            } @else {
+                #{$property}: #{$desktop-1920}px;
+            }
+        }
+    }
+}
+
+@mixin clamp-text($linesCount) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: $linesCount;
+    line-clamp: $linesCount;
+    -webkit-box-orient: vertical;
+}
+
+@mixin landscape {
+    @media (orientation: landscape) {
+        @content;
+    }
+}
+
+@mixin portrait {
+    @media (orientation: portrait) {
+        @content;
+    }
+}
+
+@mixin image-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    user-select: none;
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+@mixin hidden-native-scrollbar {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

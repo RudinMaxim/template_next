@@ -3,7 +3,7 @@ import { getRootClassName } from '@gravity-ui/uikit/server';
 import type { Metadata } from 'next';
 import '@gravity-ui/uikit/styles/fonts.css';
 import '@gravity-ui/uikit/styles/styles.css';
-import './style/main.scss';
+import './style/common.scss';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

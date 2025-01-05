@@ -1,0 +1,33 @@
+@use 'variables' as *;
+@use 'sass:math';
+
+@function smooth-value($firstValue, $secondValue, $firstPoint, $secondPoint, $dimension) {
+    @return calc(
+        #{$firstValue}px + (#{$secondValue} - #{$firstValue}) * (100v#{$dimension} - #{$firstPoint}px) /
+            (#{$secondPoint} - #{$firstPoint})
+    );
+}
+
+@function vw($value, $base: fhd) {
+    @return strip-unit($value) / map-get($breakpoints, $base) * 100vw;
+}
+
+@function vh($value, $base: fhd) {
+    @return strip-unit($value) / map-get($breakpointsVertical, $base) * 100vh;
+}
+
+@function strip-unit($number) {
+    @if type-of($number) == 'number' and not unitless($number) {
+        @return $number / ($number * 0 + 1);
+    }
+
+    @return $number;
+}
+
+@function unit($size, $root-font-size: 16) {
+    @return ($size / $root-font-size);
+}
+
+@function rem($size, $root-font-size: 16) {
+    @return unit(strip-unit($size), $root-font-size) * 1rem;
+}

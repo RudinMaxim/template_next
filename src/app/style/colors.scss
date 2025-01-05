@@ -1,0 +1,28 @@
+@use 'members' as *;
+
+:root {
+    --white: #fff;
+    --white-70: #{rgba(#fff, 0.7)};
+    --white-50: #{rgba(#fff, 0.5)};
+    --white-30: #{rgba(#fff, 0.3)};
+    --white-20: #{rgba(#fff, 0.2)};
+    --white-10: #{rgba(#fff, 0.1)};
+    --black: #192324;
+    --black-80: #{rgba(#192324, 0.8)};
+    --black-50: #{rgba(#192324, 0.5)};
+    --black-20: #{rgba(#192324, 0.2)};
+    --black-10: #{rgba(#192324, 0.1)};
+    --black-5: #{rgba(#192324, 0.05)};
+    --grey: #f8f8f8;
+    --lime: #dfffb3;
+    --blue: #cddfe1;
+    --blue-50: #{rgba(#cddfe1, 0.5)};
+    --blue-bg: #e6eff0;
+    --dark-blue: #4f6a75;
+    --dark-blue-12: #{rgba(#4f6a75, 0.12)};
+    --dark-blue-40: #{rgba(#4f6a75, 0.4)};
+    --dark-blue-80: #{rgba(#4f6a75, 0.8)};
+    --brown: #e8e0cf;
+    --green: #89de42;
+    --red: #f22c2b;
+}

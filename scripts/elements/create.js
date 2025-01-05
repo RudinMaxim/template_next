@@ -2,8 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const { askQuestion } = require('../prompts');
 
-const componentTypes = ['entity', 'feature', 'page', 'ui', 'widget'];
-
 function createDirectory(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -18,45 +16,9 @@ function isPascalCase(str) {
   return /^[A-Z][a-zA-Z0-9]*$/.test(str);
 }
 
-function isCamelCase(str) {
-  return /^[a-z][a-zA-Z0-9]*$/.test(str);
-}
-
-function isUpperSnakeCase(str) {
-  return /^[A-Z][A-Z0-9_]*$/.test(str);
-}
-
-function isKebabCase(str) {
-  return /^[a-z][a-z0-9-]*$/.test(str);
-}
-
 async function validateComponentName(name) {
   if (!isPascalCase(name)) {
     console.log('Ошибка: Имя компонента должно быть в PascalCase.');
-    return false;
-  }
-  return true;
-}
-
-async function validateUtilName(name) {
-  if (!isCamelCase(name)) {
-    console.log('Ошибка: Имя утилиты должно быть в camelCase.');
-    return false;
-  }
-  return true;
-}
-
-async function validateConstantName(name) {
-  if (!isUpperSnakeCase(name)) {
-    console.log('Ошибка: Имя константы должно быть в UPPER_SNAKE_CASE.');
-    return false;
-  }
-  return true;
-}
-
-async function validateCssClassName(name) {
-  if (!isKebabCase(name)) {
-    console.log('Ошибка: CSS класс должен быть в kebab-case.');
     return false;
   }
   return true;
@@ -313,7 +275,10 @@ describe('use${name}', () => {
     createFile(path.join(baseDir, '__tests__', `use${name}.test.ts`), hookTestContent);
   }
 
-  const styleContent = `.${name.toLowerCase()} {
+  const styleContent = `
+  @use '../../../../src/app/style/members' as *;
+  
+  .${name.toLowerCase()} {
   $root: &;
   // Добавьте базовые стили здесь
 }
