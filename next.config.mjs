@@ -1,14 +1,8 @@
-import path from 'path';
-
+import createNextIntlPlugin from 'next-intl/plugin';
+ 
+const withNextIntl = createNextIntlPlugin();
+ 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  sassOptions: {
-    includePaths: [path.join(path.dirname(import.meta.url), './src/app/style')],
-    prependData: `
-      @use 'global/variables' as globalVars;
-      @use 'global/mixins'  as globalMixins;
-    `,
-  },
-};
-
-export default nextConfig;
+const nextConfig = {};
+ 
+export default withNextIntl(nextConfig);
